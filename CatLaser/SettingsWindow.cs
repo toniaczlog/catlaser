@@ -58,19 +58,19 @@ internal sealed class SettingsWindow : Window
         {
             Width = 110, Height = 110,
             Fill = new RadialGradientBrush(Color.FromArgb(225, 255, 26, 40), Color.FromArgb(0, 255, 0, 20)),
-            HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Center, VerticalAlignment = System.Windows.VerticalAlignment.Center
         };
         preview.Children.Add(previewGlow);
         preview.Children.Add(new Ellipse
         {
             Width = 8, Height = 8, Fill = Brushes.White,
-            HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Center, VerticalAlignment = System.Windows.VerticalAlignment.Center
         });
         preview.Children.Add(new TextBlock
         {
             Text = "LIVE DESKTOP EFFECT", FontSize = 10, Foreground = MutedBrush,
-            Margin = new Thickness(12), HorizontalAlignment = HorizontalAlignment.Left,
-            VerticalAlignment = VerticalAlignment.Bottom
+            Margin = new Thickness(12), HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
+            VerticalAlignment = System.Windows.VerticalAlignment.Bottom
         });
         content.Children.Add(preview);
 
@@ -173,7 +173,7 @@ internal sealed class SettingsWindow : Window
         var panel = new DockPanel { Margin = new Thickness(0, top, 0, 0) };
         var checkbox = new CheckBox
         {
-            IsChecked = selected, VerticalAlignment = VerticalAlignment.Center,
+            IsChecked = selected, VerticalAlignment = System.Windows.VerticalAlignment.Center,
             Margin = new Thickness(14, 0, 0, 0)
         };
         checkbox.Checked += (_, _) => onChange(true);
