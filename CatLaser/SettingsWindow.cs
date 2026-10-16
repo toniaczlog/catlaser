@@ -102,7 +102,7 @@ internal sealed class SettingsWindow : Window
         header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         var brand = new Grid { Width = 49, Height = 49, Margin = new Thickness(0, 0, 13, 0) };
         brand.Children.Add(new Ellipse { Width = 39, Height = 39, Fill = Halo(Color.FromRgb(255, 49, 71)) });
-        brand.Children.Add(new Ellipse { Width = 9, Height = 9, Fill = Brushes.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center });
+        brand.Children.Add(new Ellipse { Width = 9, Height = 9, Fill = Brushes.White, HorizontalAlignment = System.Windows.HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center });
         header.Children.Add(brand);
         var brandCopy = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
         brandCopy.Children.Add(Label("CATLASER", Fore, 20, FontWeights.Bold));
@@ -259,8 +259,8 @@ internal sealed class SettingsWindow : Window
         PageTitle(body, "head_appearance", "desc_appearance");
         // A compact nonanimated preview (does not create another frame loop).
         var preview = new Grid { Height = 105 };
-        _previewGlow = new Ellipse { Width = 105, Height = 105, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-        _previewCore = new Ellipse { Width = 9, Height = 9, Fill = Brushes.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+        _previewGlow = new Ellipse { Width = 105, Height = 105, HorizontalAlignment = System.Windows.HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+        _previewCore = new Ellipse { Width = 9, Height = 9, Fill = Brushes.White, HorizontalAlignment = System.Windows.HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         preview.Children.Add(_previewGlow);
         preview.Children.Add(_previewCore);
         var previewCard = Card(preview);
@@ -619,6 +619,15 @@ internal sealed class SettingsWindow : Window
         }
         finally { _syncing = false; }
     }
+
+    private int CurrentFpsSelection() => _controller.Options.CustomFps switch
+    {
+        30 => 1,
+        60 => 2,
+        120 => 3,
+        144 => 4,
+        _ => 0
+    };
 
     private void ChoiceValue(string key, int index)
     {
