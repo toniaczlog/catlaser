@@ -171,7 +171,7 @@ internal sealed class SettingsWindow : Window
             var navButton = new Button
             {
                 Content = UiText.T(navKeys[i]), Height = 43,
-                HorizontalContentAlignment = HorizontalAlignment.Left,
+                HorizontalContentAlignment = System.Windows.HorizontalAlignment.Left,
                 Padding = new Thickness(13, 0, 5, 0),
                 Margin = new Thickness(0, 2, 0, 2),
                 Background = Brushes.Transparent, Foreground = Muted,
