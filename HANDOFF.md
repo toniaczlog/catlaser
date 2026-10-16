@@ -38,3 +38,9 @@
 - Direct download targets verified `v0.2.1` GitHub Release. Update version/link in HTML when publishing a newer EXE.
 - GitHub Pages configured for `main /docs` requires one-time repository Settings → Pages activation if not previously enabled. Do not claim the URL is live before confirming an actual HTTP response.
 - Website CI is path-scoped; Windows CI ignores docs-only changes.
+
+## Minimalist demo refresh (2026-10-16)
+- Removed the full cartoon cat SVG from the GitHub Pages hero demo and its old CSS.
+- Replaced it with two standalone jade eyes whose pupils track laser position using the existing animation frame; no extra timers or image downloads.
+- Eyes brighten on pointer/keyboard interaction, softly idle after inactivity, and occasionally blink. Reduced-motion users get stationary, responsive eyes.
+- Real / Comet / Electric buttons, PL/EN, direct download and non-demo page areas remain unchanged.

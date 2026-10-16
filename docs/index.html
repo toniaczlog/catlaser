@@ -26,8 +26,37 @@
 <div class="showcase"><div class="showcase-head"><span><i class="live-dot"></i><span data-i18n="live">INTERAKTYWNE DEMO</span></span><span>CATLASER / 02.1</span></div>
 <div class="demo" id="demo" role="group" tabindex="0" aria-label="Podgląd lasera. Porusz myszą lub dotknij.">
 <div class="grid-bg"></div><div class="demo-hint" data-i18n="hint">PORUSZ MYSZĄ TUTAJ ↗</div>
-<svg class="cat" viewBox="0 0 360 320" aria-label="Kot obserwuje laser" role="img"><defs><linearGradient id="fur" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#283648"/><stop offset="1" stop-color="#121b29"/></linearGradient></defs><path d="M207 231C198 172 232 143 270 159c37 14 50 43 47 77-5 39-97 42-110-5Z" fill="url(#fur)"/><path d="M288 189c36-10 56 6 50 28-4 16-18 22-31 17" stroke="#283648" stroke-width="22" stroke-linecap="round" fill="none"/><path d="M205 187l-12-69 44 29c19-11 43-10 61-2l35-29-5 75c6 35-20 58-64 60-47 0-69-21-59-64Z" fill="url(#fur)"/><path d="M204 155l-5-25 23 16 88 0 13-15-2 27" fill="#9e737c"/><path d="M234 192q12-7 24 0m25 0q14-9 26-1" stroke="#b2f4bd" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M260 210l7 6 7-6Z" fill="#efa8aa"/><path d="M264 217q-11 13-24 3m29-3q12 12 22 3" stroke="#808994" stroke-width="2" fill="none"/><path d="M256 216l-43-7m43 13l-39 8m59-14 44-7m-44 13 40 8" stroke="#647486" stroke-width="1.6"/><path d="M226 244q-8 34 7 40h25q12-18-3-37m30-3q-10 34 1 40h25" fill="url(#fur)" stroke="#182231" stroke-width="2"/></svg>
-<canvas id="laser-preview" aria-hidden="true"></canvas><span class="demo-bottom" data-i18n="demoBottom">KLIKNIJ LUB DOTKNIJ, ABY PRZESUNĄĆ</span></div>
+<div class="eyes-stage" id="watcher" aria-hidden="true">
+<svg class="watch-eyes" viewBox="0 0 360 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<clipPath id="eye-left-clip"><path d="M40 79Q90 28 153 76Q99 123 40 79Z"/></clipPath>
+<clipPath id="eye-right-clip"><path d="M207 76Q270 28 320 79Q261 123 207 76Z"/></clipPath>
+<radialGradient id="iris-glow"><stop offset="0" stop-color="#E4FFE6"/><stop offset=".25" stop-color="#A6F2C4"/><stop offset=".62" stop-color="#62BFA5"/><stop offset="1" stop-color="#225C61"/></radialGradient>
+<linearGradient id="eye-dark" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#203C45"/><stop offset="1" stop-color="#07151F"/></linearGradient>
+</defs>
+<g class="watch-eye">
+<path d="M40 79Q90 28 153 76Q99 123 40 79Z" fill="url(#eye-dark)" stroke="#9EECCB" stroke-opacity=".55" stroke-width="1.9"/>
+<g clip-path="url(#eye-left-clip)"><g class="eye-gaze">
+<circle cx="97" cy="78" r="26" fill="url(#iris-glow)"/>
+<circle cx="97" cy="78" r="19" stroke="#C8FFE2" stroke-opacity=".28" stroke-width="1.5"/>
+<ellipse cx="97" cy="78" rx="6.4" ry="21" fill="#081820"/>
+<circle cx="89" cy="65" r="4" fill="#F8FFF5" opacity=".9"/>
+</g></g>
+<path d="M40 79Q90 28 153 76" stroke="#BEFFE1" stroke-opacity=".44" stroke-width="2.2" stroke-linecap="round"/>
+</g>
+<g class="watch-eye">
+<path d="M207 76Q270 28 320 79Q261 123 207 76Z" fill="url(#eye-dark)" stroke="#9EECCB" stroke-opacity=".55" stroke-width="1.9"/>
+<g clip-path="url(#eye-right-clip)"><g class="eye-gaze">
+<circle cx="263" cy="78" r="26" fill="url(#iris-glow)"/>
+<circle cx="263" cy="78" r="19" stroke="#C8FFE2" stroke-opacity=".28" stroke-width="1.5"/>
+<ellipse cx="263" cy="78" rx="6.4" ry="21" fill="#081820"/>
+<circle cx="255" cy="65" r="4" fill="#F8FFF5" opacity=".9"/>
+</g></g>
+<path d="M207 76Q270 28 320 79" stroke="#BEFFE1" stroke-opacity=".44" stroke-width="2.2" stroke-linecap="round"/>
+</g>
+</svg>
+</div>
+<canvas id="laser-preview" aria-hidden="true"></canvas><span class="demo-bottom" data-i18n="demoBottom">OCZY ŚLEDZĄ LASER. RUSZ KURSOREM.</span></div>
 <div class="demo-controls"><b data-i18n="effectsLabel">WYBIERZ EFEKT</b><div><button class="selected" data-fx="real" aria-pressed="true">REAL</button><button data-fx="comet" aria-pressed="false">COMET</button><button data-fx="electric" aria-pressed="false">ELECTRIC</button></div></div><p class="demo-note" data-i18n="demoNote">Podgląd w przeglądarce. Pełna aplikacja działa na pulpicie Windows.</p>
 </div></section>
 <div class="ribbon" aria-hidden="true">LASER FX <span>✳</span> CAT MODE <span>✳</span> OPEN SOURCE <span>✳</span> NO SUBSCRIPTION <span>✳</span> LASER FX <span>✳</span> CAT MODE</div>
