@@ -1,24 +1,52 @@
-# Next
+# CatLaser — co dalej (po 2026-10-16)
 
-1. Confirm GitHub Actions Windows publish and release archive status for v0.2.1.
-2. On Windows, test interactive responsiveness compared with 0.1: manual pointer, 8 visual styles, color switching, 5 autonomous games and shockwaves.
-3. Inspect any WPF frame skips/mixed-DPI/dual-monitor issues, energy consumption on Eco mode, input pass-through and cursor recovery.
-4. Exercise session rest and timeout, click catch, preset persistence/reload and every global shortcut.
-5. If approved in Windows smoke test, graduate prerelease to stable without another code deployment.
+**Dzisiaj kończymy.** Nie uruchamiać nowych buildów ani nie dodawać funkcji bez kolejnej decyzji użytkownika. Ostatni release: **0.3.0 prerelease**. [Stan projektu](HANDOFF.md).
 
-6. On Polish Windows verify default Polish on fresh profile, PL/EN toggle, restart persistence, non-Polish fallback, tray menu labels, and navigation sections.
-7. Check at 100%/125%/150% text scaling for clipping and ensure switching language while laser is on never resets the cursor or session.
+## 1. Ręczny test EXE 0.3 na Windows — priorytet
 
-## Landing page next steps
-- Enable GitHub Pages in Settings → Pages, source `Deploy from a branch`, branch `main`, folder `/docs` (if not already active).
-- Verify actual live URL, mobile layout, both language versions, laser preview and download CTA in a real browser.
-- Prepare 9:16 cat-loving short video concept, Gemini / Google Flow storyboard and prompt(s); link the published landing page in social bio.
+- [ ] Zamknij wcześniejszy CatLaser w trayu; pobierz [ZIP 0.3](https://github.com/toniaczlog/catlaser/releases/tag/v0.3.0), rozpakuj, uruchom EXE.
+- [ ] Polski interfejs na polskim Windows; przełącz PL/EN, uruchom ponownie; sprawdź nawigację i opisy.
+- [ ] Efekty Real/Neon/Cyber/Photoreal/Comet/Electric/Prism/Plasma, kolory, ślady, shockwave i jitter.
+- [ ] Nowe HaloPulse/TwinSpot/LightTunnel/SoftStar: animacja, brak agresywnych błysków, płynność.
+- [ ] Gry Ricochet/SmartPrey/MouseHunt/HideSeek/CatchMe oraz Spiral/FigureEight/Orbit; prędkość, wybrany monitor i ograniczony prostokąt.
+- [ ] Playlisty: zapis, uruchomienie, ciemna przerwa (Manual), zakończenie sesji i wyłączenie.
+- [ ] Skróty globalne: nowe kombinacje, duplikaty, zajęta kombinacja i rollback bez utraty starych skrótów.
+- [ ] Tray: presety, kolory, gry, playlisty, prędkość i wyjście; wyjście przywraca standardowy kursor.
+- [ ] Fullscreen pause: bezramkowy pełny ekran, zwykłe zmaksymalizowane okno, wznowienie i przywrócenie kursora.
+- [ ] **Krytyczne:** wyłączenie, ponowne uruchomienie i polecenie `CatLaser.exe --restore-cursors` poprawnie przywracają schemat kursorów.
+- [ ] Eco/Balanced/Ultra oraz A13: nieruchomy ręczny Real/Neon/Comet ogranicza pracę renderowania; ruch budzi normalny limit. Jeśli możliwe, zmierz obciążenie CPU/GPU.
+- [ ] Sprawdź Windows scale 100/125/150% i konfigurację dwóch monitorów/mixed-DPI.
 
-## v0.3 test checklist
+## 2. Kontrola landingu GitHub Pages
 
-- On Windows: check all four visual illusions, spiral/eight/orbit, selected monitor and area, saved playlist reload and startup, rest, tray submenu, custom hotkey conflicts and rollback, fullscreen pause and cursor restore.
-- On Windows: visually review the automatic WPF screenshot `docs/screenshots/settings-0.3.png` and optionally add genuine effects captures from manual testing.
-- On landing: test PL/EN URLs, 8 interactive effects, glow/trail/color inputs, motion previews, sticky download and press SVG links. Check both 390px mobile and desktop.
-- Watch for main/release race on combined deploy. Ensure tag `v0.3.0` and ZIP are present before advertising download.
+- [ ] Obejrzyj desktop i mobile (~390 px): [PL](https://toniaczlog.github.io/catlaser/pl/) oraz [EN](https://toniaczlog.github.io/catlaser/en/).
+- [ ] Osiem efektów w demie, zmiana barwy/poświaty/śladu, cztery mini-previews i oczy śledzące kursor.
+- [ ] Sprawdź sticky CTA mobile, link ZIP 0.3, sekcję bezpieczeństwa, changelog, FAQ i SVG w `docs/press/`.
+- [ ] Obejrzyj realny screenshot WPF w `docs/screenshots/settings-0.3.png`; opcjonalnie nagraj *prawdziwy* desktopowy pokaz nowych efektów na komputerze.
 
-- Verify on Windows that adaptive 12 FPS starts only after the laser is idle, and moving the pointer wakes it immediately.
+## 3. Stabilizacja i promocja — dopiero po QA
+
+- [ ] Napraw tylko stwierdzone usterki, łącz poprawki w ograniczoną liczbę CI/release.
+- [ ] Uporządkuj pochodzenie taga `v0.3.0` względem nowszego nadpisanego assetu ZIP; sprawdź rzeczywisty build/SHA przed stable.
+- [ ] Po zatwierdzeniu smoke-testu rozważ zmianę prerelease → stable (bez fikcyjnego potwierdzania testów).
+- [ ] Opcjonalnie: 8-sekundowe Gemini, 20–30 sekund Google Flow, publikacja darmowych Shorts/TikTok; użyj realnego wideo z EXE.
+- [ ] Opcjonalnie: wybór i zakup taniej domeny dla GitHub Pages. **Na 2026-10-16 domena nie jest kupiona.**
+
+## Przydatne komendy
+
+```powershell
+# Awaryjne przywrócenie kursorów w katalogu programu
+.\CatLaser.exe --restore-cursors
+
+# Testy na Windows z .NET SDK 10
+dotnet run --project tests/LocalizationSmoke/LocalizationSmoke.csproj -c Release
+dotnet run --project tests/ConfigSmoke/ConfigSmoke.csproj -c Release
+```
+
+```bash
+# Walidacja strony (Node.js)
+node --check docs/main.js
+node scripts/check-site.mjs
+```
+
+**Nie zakładać żadnych automatycznych przypomnień związanych z projektem.** Kontynuacja dopiero na życzenie.

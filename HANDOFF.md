@@ -1,69 +1,74 @@
-# CatLaser · Handoff (v0.2)
+# CatLaser — HANDOFF, 2026-10-16
 
-## Repo and runtime
-- `toniaczlog/catlaser`, main, public, MIT.
-- Native WPF/.NET 10 Windows x64 app, self-contained portable zip through GitHub Actions.
-- No Vercel, Netlify, Coolify, Supabase, or secrets.
-- Existing global mouse pointer replacement must always restore on exit/start/disable.
+**Stan: zamykamy dziś pracę.** Nie uruchamiać nowych wdrożeń bez kolejnego polecenia. Ten dokument opisuje ostatni potwierdzony stan, nie zastępuje odczytu aktualnego HEAD.
 
-## v0.2 architecture
-- `LaserController`: dispatcher timer, fixed FPS caps, interaction, sessions, rest, tray mode and transitions.
-- `LaserOverlay`: one drawing surface per monitor instead of many individually moving WPF elements; suppress invalidations on inactive monitors.
-- `MotionEngine`: six play behaviors; physical mouse unaffected in automated play.
-- `LaserOptions`: visual style, color, intensity, mode, runtime performance and session settings.
-- `PresetStore`: 25 local JSON presets, sanitize on load, no telemetry.
-- `HotkeyWindow`: L/E/C/M/Up/Down global shortcuts with Ctrl+Alt.
-- `SettingsWindow`: controls, session settings and measured FPS counter.
+## Repozytorium, release i strona
 
-## CI / release
-- GitHub Actions uses windows-latest, .NET 10; builds `CatLaser-0.2-win-x64.zip`.
-- Publishes `v0.2.0` as prerelease once build succeeds. This does not constitute GUI smoke testing.
+- Repo publiczne MIT: **https://github.com/toniaczlog/catlaser**; branch **main**.
+- HEAD sprzed commita dokumentacyjnego: **a6b46d0b407e07632e4ff3bafd720a219b3d7369**. Przy wznowieniu odczytaj aktualny HEAD.
+- Produkcja strony: **https://toniaczlog.github.io/catlaser/**; wersje językowe **/pl/** i **/en/**; source **main:/docs**.
+- Native EXE: **CatLaser 0.3.0** — C# / .NET 10 WPF + Windows Forms + Win32, portable Windows 10/11 x64.
+- Release: **https://github.com/toniaczlog/catlaser/releases/tag/v0.3.0**.
+- Asset: **CatLaser-0.3-win-x64.zip**, **71 504 977 bajtów** (ok. 71,5 MB), niepodpisany cyfrowo; **prerelease**, nie stable.
+- GitHub Pages jest już aktywne i działa. Bez Vercel/Netlify/Coolify/Supabase, logowania, zakupionej domeny lub płatnego hostingu.
 
-## Verification
-- Inspect exact SHA and CI logs after push.
-- Smoke test on Windows: manual cursor restore, click-through, overlays, all styles, FPS, rest/automatic stop, multi-monitor and mixed DPI, preset reload, hotkeys, native recovery.
+## Co jest zrobione w EXE 0.3
 
-## v0.2.1 localization and UI
-- `UiText` contains PL/EN translations and checks Windows `CurrentUICulture` on first launch.
-- Overrides persist at `%LOCALAPPDATA%\\CatLaser\\language.txt`, distinct from laser presets.
-- Rebuilt `SettingsWindow`: compact fixed status header and six navigable tabs; language switch rebuilds only window controls, not laser overlay.
-- `Program.cs`: tray menu titles and tooltip follow current language.
-- `tests/LocalizationSmoke`: no-NuGet assertions for pl-PL default, override, translated strings and change event.
-- Release `v0.2.1` remains prerelease until a human tests Polish Windows UI and manual switching.
+- **A1:** wybór monitora i procentowego prostokąta ruchu dla lasera automatycznego. `MotionEngine.cs` operuje na granicach ekranu; nie porusza kursora Windows.
+- **A3:** `PlaylistStore.cs` — do 15 nazwanych sekwencji, do 20 etapów. `Manual` w playliście oznacza **ciemną przerwę**, a nie tryb sterowania myszą.
+- **A4:** Spiral, FigureEight i Orbit, z konfigurowalnym promieniem/prędkością.
+- **A6:** HaloPulse, TwinSpot, LightTunnel i SoftStar; łącznie **12 stylów**.
+- **A9:** `HotkeyConfig.cs` + `HotkeyWindow.cs` — sześć własnych skrótów, wykrywanie duplikatów, nieudanej rejestracji i rollback.
+- **A11:** rozszerzone menu tray: gry, kolory, presety, playlisty, prędkość.
+- **A13:** `LaserController.cs` / `LaserOptions.cs` — adaptacyjny tryb redukujący pracę renderowania i cykl dispatchera do ~12 FPS dla nieruchomego Manual Real/Neon/Comet; animowane efekty i gry pozostają przy ustawionym FPS. Mierzony parametr **LastSubmissionMilliseconds to czas zgłoszenia rysowania, nie render GPU**.
+- Dodatkowo: `FullscreenGuard.cs` — best-effort wykrywanie bezramkowego fullscreen i wstrzymanie overlay.
+- PL/EN przez `UiText.cs`, domyślnie polski w Windows z polskim językiem UI; wybór zapamiętywany.
+- `PresetStore.cs` — do 25 lokalnych konfiguracji, `playlists.json` i `hotkeys.json` w `%LOCALAPPDATA%/CatLaser/`.
 
-## Landing page / GitHub Pages (2026-10-16)
-- Static landing in `docs/index.html`, `docs/styles.css`, `docs/main.js`, `docs/favicon.svg`, `docs/.nojekyll`.
-- Bilingual PL/EN: browser locale for first visit; explicit selection saved to localStorage.
-- Live canvas preview with Real / Comet / Electric. Animation pauses offscreen/reduced-motion. No external fonts, trackers or analytics.
-- Direct download targets verified `v0.2.1` GitHub Release. Update version/link in HTML when publishing a newer EXE.
-- GitHub Pages configured for `main /docs` requires one-time repository Settings → Pages activation if not previously enabled. Do not claim the URL is live before confirming an actual HTTP response.
-- Website CI is path-scoped; Windows CI ignores docs-only changes.
+## Co jest zrobione na landingu
 
-## Minimalist demo refresh (2026-10-16)
-- Removed the full cartoon cat SVG from the GitHub Pages hero demo and its old CSS.
-- Replaced it with two standalone jade eyes whose pupils track laser position using the existing animation frame; no extra timers or image downloads.
-- Eyes brighten on pointer/keyboard interaction, softly idle after inactivity, and occasionally blink. Reduced-motion users get stationary, responsive eyes.
-- Real / Comet / Electric buttons, PL/EN, direct download and non-demo page areas remain unchanged.
+Wszystkie wybrane **L1, L3, L5, L6, L7, L8, L9, L10, L11, L13 i L14**:
 
-## v0.3.0 development handoff
+- Rzeczywisty zrzut okna WPF w `docs/screenshots/settings-0.3.png`, **63 523 bajtów**. Wygenerowany przez uruchomione EXE na runnerze Windows — nie makieta AI. Nie potwierdza jeszcze rzeczywistych efektów lasera ani zachowania GUI na domowym PC.
+- Demo Canvas: 8 efektów, regulacja koloru/poświaty/śladu; śledzące punkt minimalistyczne oczy; 4 mini-demonstracje ruchu.
+- Sticky CTA na mobile; download 0.3/ZIP, changelog, bezpieczeństwo i prywatność, animacje przewijania z obsługą reduced motion.
+- `docs/index.html`, `docs/pl/index.html`, `docs/en/index.html`, SEO robots/sitemap i metadane.
+- `docs/press/` zawiera mark/wordmark i formaty 9:16, 16:9 jako SVG.
+- Brak dodatkowego płatnego hostingu i brak kupionej/podpiętej domeny.
 
-Windows:
-- `LaserOptions` includes selected monitor, percentage play area, orbit radius and fullscreen-pausing toggle.
-- `MotionEngine.GetPlayArea` uses selected screen + physical pixel rectangle; Spiral, FigureEight and Orbit are new modes.
-- `PlaylistStore` persists up to 15 sequences with 20 bounded steps; manual step in playlist is a blank rest.
-- `LaserController` owns playlist advancement and fullscreen suspension. Do not move the OS pointer.
-- `FullscreenGuard` ignores maximized captioned windows; foreground borderless fullscreen detection is best-effort (must smoke-test mixed DPI & games).
-- `HotkeyConfig` persists six customizable key combinations; `HotkeyWindow.Rebind` rollback on conflicts. `SettingsWindow` editor and `Program` tray quick menus use it.
-- `LaserOverlay` draws four subtle additional light illusions.
+## Testy i historia wdrożeń
 
-Website:
-- `docs/index.html`, `docs/main.js`, `docs/styles.css` include eight-effect tuner, four movement preview canvases, sticky mobile download, privacy/download/release/press sections. `docs/pl/` and `docs/en/` are static SEO routes, `docs/sitemap.xml` + robots.
-- `docs/press/` holds mark, wordmark, 9:16 and 16:9 SVG assets. No external CDN.
-- L1 screenshot uses **actual** WPF settings window rendered by a Windows GitHub Actions run: `docs/screenshots/settings-0.3.png` (63,523 bytes). Do not replace it with generated mockups.
-- Tests: `tests/ConfigSmoke`, `tests/LocalizationSmoke` in Windows workflow; `scripts/check-site.mjs` for website.
+- **Windows**: [Actions 38954570106](https://github.com/toniaczlog/catlaser/actions/runs/38954570106) — **success** (PL/EN smoke, ConfigSmoke, publish x64, upload asset, screenshot).
+- **Strona**: [Actions 38955090041](https://github.com/toniaczlog/catlaser/actions/runs/38955090041) — **success**, po poprawie testu nazwy screenshotu.
+- **Pages**: [Actions 38955090774](https://github.com/toniaczlog/catlaser/actions/runs/38955090774) — **success** na HEAD sprzed aktualizacji docs.
+- Pośrednia nieudana walidacja `38955011028` wynikała z błędnego escapowania regex w `scripts/check-site.mjs`; poprawiona w `a6b46d0`, obecny test zielony.
+- **Uwaga provenance wydania:** release `v0.3.0` ma pole `target_commitish` wskazujące `413d565a...`, chociaż aktualny ZIP był ponownie wgrywany przez nowszy build `b1876be...`. Przed stable rozdzielić „do jakiego commita prowadzi tag” od „z jakiego builda pochodzą bajty ZIP” i zweryfikować/reutworzyć prawidłowe wydanie.
+- Workflow Windows filtruje `CatLaser/**` i `tests/**`. Zmiany tylko Markdown nie powinny produkować nowej wersji EXE. Nie modyfikować workflow bez potrzeby.
+- Zrzut WPF wykonywany przez flagę `--capture-settings`; workflow może stworzyć dodatkowy commit do `docs/screenshots/` podczas builda — sprawdzać HEAD i race publikacji.
 
-## v0.3.1 follow-up: adaptive power (A13)
-- `LaserController` detects idle manual pointer in nonanimated Real/Neon/Comet styles; after fading trail settles, skips overlay invalidation and reduces dispatcher ticks to 12 FPS.
-- Animated styles and autonomous games remain at selected FPS; changes in pointer position restore selected FPS.
-- `LastSubmissionMilliseconds` measures the time to submit frame drawing requests to WPF, not actual GPU duration.
-- WPF control checkbox is localized (PL/EN), and remains part of saved presets.
+## Znane ryzyka / czego nie wolno twierdzić
+
+1. **Brak pełnego ręcznego smoke-testu CatLaser 0.3 na rzeczywistym Windows.** CI potwierdza kompilację i testy konfiguracji, nie jakość animacji ani poprawność wszystkich interakcji.
+2. Nieweryfikowane: kilka monitorów/mixed-DPI, click-through, efekty optyczne, playlisty z przerwą, konflikty globalnych klawiszy, powrót z fullscreen i bezpieczne przywracanie kursora.
+3. **Brak benchmarku CPU/GPU** dla A13; 12 FPS to ustawienie dispatchera podczas spoczynku, nie pomiar oszczędności.
+4. EXE bez podpisu kodu (możliwy SmartScreen).
+5. Screenshot WPF prawdziwy, ale nie pokazuje lasera na innych aplikacjach; lepsze materiały promocyjne powinny powstać z rzeczywistych nagrań.
+
+## Krytyczny mechanizm bezpieczeństwa
+
+`NativeCursor.Apply` podmienia **widoczny globalny kursor Windows** w Manual. Niezmienny wymóg: `NativeCursor.Restore` na starcie, wyłączeniu i normalnym wyjściu oraz w odpowiedniej pauzie fullscreen. Nigdy nie ukrywać kursora. Tryby automatyczne nie wysyłają ruchów do myszy.
+
+Awaryjnie, w folderze z aplikacją:
+
+```powershell
+.\CatLaser.exe --restore-cursors
+```
+
+## Start kolejnej sesji
+
+1. Przeczytaj aktualny `README.md`, `HANDOFF.md`, `DECISIONS.md`, `NEXT.md`, odczytaj HEAD, listę commitów i CI; nie zakładaj stanu z tego SHA po nowych zmianach.
+2. Na komputerze użytkownika zamknij stary CatLaser w trayu, pobierz 0.3 i wykonaj **ręczny test według NEXT.md**, zwłaszcza kursora, playlist i pełnego ekranu.
+3. Napraw stwierdzone usterki, nie dodawaj od razu kolejnej partii efektów; zminimalizuj liczbę buildów/release.
+4. Po QA można wrócić do promowania projektu darmowymi Shorts/TikTok, scenariuszem Gemini/Google Flow, opcjonalnie do kupna krótkiej domeny. **Nie kupiono domeny ani reklam.**
+
+**Zamknięcie prac: 2026-10-16.**

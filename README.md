@@ -1,123 +1,114 @@
-# CatLaser 0.3.0 · Laser Playground 🔴
+# CatLaser 0.3.0
 
-**Turn your mouse into a desktop laser.** Free, local, open-source Windows 10/11 software, built with .NET 10 + WPF + Win32. No accounts, ads or API keys.
+**A desktop laser pointer, made for curious cats.** Free, open-source Windows 10/11 (x64) application with interactive light effects and optional automatic play modes. Built with native **C# / .NET 10 / WPF / Win32**.
 
 [![Windows build](https://github.com/toniaczlog/catlaser/actions/workflows/windows-build.yml/badge.svg)](https://github.com/toniaczlog/catlaser/actions/workflows/windows-build.yml)
+[![Website tests](https://github.com/toniaczlog/catlaser/actions/workflows/site-check.yml/badge.svg)](https://github.com/toniaczlog/catlaser/actions/workflows/site-check.yml)
 
-## Download
+**[Website](https://toniaczlog.github.io/catlaser/)** · **[Polski](https://toniaczlog.github.io/catlaser/pl/)** · **[English](https://toniaczlog.github.io/catlaser/en/)** · **[Download Windows v0.3.0](https://github.com/toniaczlog/catlaser/releases/download/v0.3.0/CatLaser-0.3-win-x64.zip)**
 
-**[CatLaser v0.3.0 — Windows x64 ZIP](https://github.com/toniaczlog/catlaser/releases/tag/v0.3.0)**
+## Download / Pobierz
 
-Download `CatLaser-0.3-win-x64.zip`, extract the archive and start `CatLaser.exe`. Self-contained portable application; no separate .NET installation is required. The executable is not code-signed; Windows SmartScreen may warn. The release is marked **prerelease** until an interactive Windows test is performed.
+1. Download [CatLaser-0.3-win-x64.zip](https://github.com/toniaczlog/catlaser/releases/download/v0.3.0/CatLaser-0.3-win-x64.zip) (~71.5 MB).
+2. Unzip and launch **CatLaser.exe**. No installer or separately installed .NET runtime required.
+3. Choose a light effect or automatic game. Use the Windows tray icon to change settings or exit.
 
-## Język polski / English
+**Polski:** Pobierz ZIP, rozpakuj, uruchom CatLaser.exe. Na polskim Windows interfejs domyślnie jest po polsku; przełącznik **PL / EN** zapisuje Twój wybór.
 
-- When Windows UI language is Polish (`pl-PL`), CatLaser automatically starts in Polish; other Windows display languages default to English.
-- Click **PL / EN** in the top-right corner to switch immediately. This choice is saved to `%LOCALAPPDATA%\\CatLaser\\language.txt` and overrides the system language on later launches.
-- The Windows notification-area menu, statuses, explanations, all game modes, presets and settings are translated.
-- The new dashboard separates **Laser**, **Cat games**, **Sessions**, **Performance**, **My presets** and **Shortcuts** for less scrolling.
-- No changes to the animation engine or system pointer recovery behavior.
+**Release status:** 0.3.0 is a **prerelease**, not yet approved through full hands-on Windows GUI testing. The executable is **unsigned**; SmartScreen can warn. Windows CI compiled and packaged this release successfully.
 
-## Laser visuals
+## Features
 
-- Real, Neon and Cyber (original styles)
-- Photoreal: warm bright core, tiny coherent-looking grain and asymmetrical halo
-- Comet: tapered, fading luminous streak
-- Electric: arcing micro-lightning and tiny sparks
-- Prism: three rotating colored dots plus a selectable base color
-- Plasma: living halo with animated rings
-- Shockwaves on clicks and sudden stops, adjustable organic hand-held jitter
-- Adjustable glow, size, trail and six laser colors
+### Light effects
+- 12 styles: **Real, Neon, Cyber, Photoreal, Comet, Electric, Prism, Plasma, HaloPulse, TwinSpot, LightTunnel, SoftStar**.
+- Six base colors, adjustable size, glow, trail and subtle organic jitter.
+- Optional shockwave on click or sudden stop. New effects avoid intentional high-contrast strobing.
 
-## Games (without moving the system mouse)
+### Play modes
+- **Manual** plus eight automatic modes: **Ricochet, SmartPrey, MouseHunt, HideSeek, CatchMe, Spiral, FigureEight, Orbit**.
+- Pick a monitor and a percentage-based safe play rectangle, then adjust speed/orbit radius.
+- Sessions of 30 s, 2 min or 5 min with configurable rests.
+- Named **Laser Playlists**: up to 15 sequences with up to 20 steps. A Manual step in a playlist deliberately acts as a *dark rest*.
+- Automated modes only animate a virtual light: they **never move the real mouse cursor**.
 
-- **Manual** — red (or selected-color) pointer follows mouse
-- **Ricochet** — laser reflects from screen edges
-- **SmartPrey** — irregular movement, rests, surprise bursts
-- **MouseHunt** — fast zigzags, short hesitations
-- **HideSeek** — virtual dark hiding blocks, occasional hide points
-- **CatchMe** — click/touch-generated click near laser creates catch wave and short freeze
+### Performance and controls
+- One lightweight click-through WPF drawing surface per monitor.
+- **Eco (~30 FPS), Balanced (~60 FPS), Ultra (~120 FPS)**, or custom frame caps at 30/60/120/144 FPS.
+- **AdaptivePower**: after inactivity in Manual Real/Neon/Comet, the dispatcher slows toward 12 FPS and skips unnecessary redraws; moving the pointer restores the selected speed. Actual CPU/GPU savings still require benchmarking.
+- Best-effort pause when a borderless fullscreen foreground app is detected.
+- Expanded tray menus for modes, colors, speed, saved presets and playlists.
+- Six customizable global hotkeys with duplicate/conflict checking and rollback.
 
-Games always have an automatic end: 30 seconds / 2 minutes / 5 minutes of active play, with optional rests every 20/30/60 seconds.
-
-## Performance
-
-The original WPF overlay used dozens of individual shape controls updated on every frame. CatLaser 0.2 replaces them with **one custom drawing surface per monitor**. Non-active screens skip invalidation. Trail samples are time bounded and draw complexity scales with the performance profile.
-
-Eco (~30 FPS), Balanced (~60 FPS), Ultra (~120 FPS), or manual FPS caps 30/60/120/144. Actual frame rate also depends on Windows and your display.
-
-## Controls
-
-| Hotkey | Action |
+| Default shortcut | Action |
 |---|---|
-| Ctrl + Alt + L | Toggle on/off |
-| Ctrl + Alt + E | Next visual style |
+| Ctrl + Alt + L | Toggle laser |
+| Ctrl + Alt + E | Next effect |
 | Ctrl + Alt + C | Next color |
-| Ctrl + Alt + M | Next game mode |
-| Ctrl + Alt + ↑ | Faster |
-| Ctrl + Alt + ↓ | Slower |
+| Ctrl + Alt + M | Next play mode |
+| Ctrl + Alt + Up | Faster |
+| Ctrl + Alt + Down | Slower |
 
-Close the settings window to keep CatLaser in the notification area; use the tray icon to reopen or exit.
-
-## Custom presets
-
-Use **My Presets** to store up to 25 combinations, each with style, color, speed, effects, play mode and performance settings. Presets are local JSON data in `%LOCALAPPDATA%\CatLaser\presets.json`.
+### PL/EN and privacy
+- App UI language follows the Windows display language: Polish for PL, English otherwise. Manual selection takes priority thereafter.
+- Settings are local. **No account, ads, subscriptions, cloud synchronization or telemetry.**
+- User data is under **%LOCALAPPDATA%/CatLaser/**: language.txt, presets.json, playlists.json and hotkeys.json.
 
 ## Safety and cursor recovery
 
-CatLaser draws through a click-through desktop overlay. In **Manual** mode the normal Windows cursor is replaced by a small **visible** dot using `SetSystemCursor`; it is restored on disable, normal exit and startup via `SPI_SETCURSORS`. This global cursor override can affect all Windows programs. If the app crashes before restoration, restart it or run `CatLaser.exe --restore-cursors`. Reapplying your Windows cursor scheme will also restore it. Native replacement cursors are never hidden.
+**Important:** Manual mode replaces the **system-wide Windows cursor** with a *visible* laser-style cursor. CatLaser restores the Windows cursor scheme on startup, disable and normal exit, including appropriate fullscreen pauses.
 
-Automatic games do **not** move your actual mouse. Monitor play sessions to prevent cats from scratching or damaging the screen, and finish with a physical toy/treat they can catch.
-
-## Build
-
-On Windows with .NET 10 SDK:
+If a crash leaves the pointer changed, restart and exit CatLaser normally, or run from the executable directory:
 
 ```powershell
+.\CatLaser.exe --restore-cursors
+```
+
+You can also reapply the original pointer scheme in Windows Mouse settings. **Supervise cats near the screen**, use short sessions and finish with a physical toy they can catch. CatLaser displays light on a monitor — it does **not** emit a physical laser.
+
+## Website (GitHub Pages)
+
+Static bilingual landing published at **https://toniaczlog.github.io/catlaser/** from **main → /docs**. No Vercel, backend, hosting bill, client trackers or JavaScript build framework.
+
+- Switchable PL/EN with indexable **/pl/** and **/en/** routes.
+- Browser laser demo with **eight effects**, color/glow/trail controls and tracking eyes; four mini movement previews.
+- Mobile sticky download CTA, FAQ, privacy/safety, changelog and download instructions.
+- **[Real Windows settings screenshot](docs/screenshots/settings-0.3.png)** produced from the actual WPF app in Windows CI; not an AI-generated mockup. This only shows the settings window, not live laser effects.
+- [Press and social SVG assets](docs/press/): laser mark, wordmark, vertical Shorts graphic and horizontal banner.
+- A custom domain has **not** been purchased or configured for this project.
+
+## Build and validation
+
+On Windows with .NET SDK 10:
+
+```powershell
+dotnet run --project tests/LocalizationSmoke/LocalizationSmoke.csproj -c Release
+dotnet run --project tests/ConfigSmoke/ConfigSmoke.csproj -c Release
 dotnet publish CatLaser/CatLaser.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o dist
 ```
 
-Automated release builds run on GitHub-hosted Windows runners. CI checks the build artifact but cannot verify live mouse interaction. Do a local GUI test before distributing to others.
+Optional authentic WPF settings screenshot from the published executable:
+
+```powershell
+.\dist\CatLaser.exe --capture-settings settings.png
+```
+
+Website validation (Node.js, no npm install required):
+
+```bash
+node --check docs/main.js
+node scripts/check-site.mjs
+```
+
+**CI separation:** changes under CatLaser/ or tests/ trigger Windows build/release; docs/ and website tests trigger website validation; GitHub Pages publishes static site. Markdown documentation-only commits do not intentionally produce a new Windows release.
+
+**Verified 2026-10-16:** Windows CI and its localization/config smoke tests succeeded; website CI and GitHub Pages deployment succeeded. Full **hands-on Windows 0.3 GUI testing has NOT been completed** (multi-monitor mixed DPI, cursor recovery, global keys, fullscreen suspension, playlists, FPS).
+
+## Project documentation
+
+- [HANDOFF.md](HANDOFF.md) — current status, release provenance and technical handoff.
+- [DECISIONS.md](DECISIONS.md) — product and architectural decisions.
+- [NEXT.md](NEXT.md) — manual QA checklist and optional future work.
 
 ## License
 
-MIT.
-
-## Website · GitHub Pages
-
-The bilingual PL/EN landing page lives in [`docs/`](docs/). It is plain HTML, CSS and JavaScript — zero npm dependencies, paid hosting or telemetry. It includes a live laser demo and a direct Windows download link.
-
-**One-time GitHub Pages setup** (requires repository admin in GitHub UI):
-1. Open [Settings → Pages](https://github.com/toniaczlog/catlaser/settings/pages).
-2. Under **Build and deployment**, select **Deploy from a branch**.
-3. Branch: `main`, folder: `/docs`, then **Save**.
-4. When Pages finishes publishing, the expected site address is `https://toniaczlog.github.io/catlaser/`. Confirm the actual URL in Pages settings before sharing publicly.
-
-Subsequent edits to `docs/` publish from the same repository automatically. The Windows build workflow is path-filtered so docs-only commits do not rebuild the EXE.
-
-To validate a site edit: `node --check docs/main.js && node scripts/check-site.mjs`.
-The language selector defaults to the visitor's preferred browser language (PL or EN), and persists the selected language in browser localStorage.
-
-## CatLaser 0.3.0 features
-
-- Select the game monitor and a percentage-based safe play rectangle (left/top/width/height); movement is clamped to it.
-- Playlists: compose up to 20 steps, each 10/20/30/60 seconds. A rest step turns off the virtual dot without moving the physical pointer. Up to 15 named sequences saved locally.
-- New Spiral, FigureEight and Orbit motions (with adjustable orbit radius).
-- HaloPulse, TwinSpot, LightTunnel and SoftStar light effects; slow alpha transitions, avoiding strobing.
-- Pause overlay and restore native cursor when a borderless fullscreen foreground application is detected; resume afterwards. Maximized normal windows are excluded.
-- Configurable global shortcuts (six actions). Combo editor validates duplicates and rolls back registrations on OS conflict; bindings are persisted locally.
-- Tray submenus: colors, games, presets, playlists and speed +/-10%; localized PL and EN.
-
-**Manual Windows GUI verification is still required** for fullscreen detection, per-monitor DPI and global hotkeys. Source is built and tested on GitHub Actions.
-
-## Website refresh
-
-Landing hosted by GitHub Pages at [CatLaser](https://toniaczlog.github.io/catlaser/), with indexable [/pl/](https://toniaczlog.github.io/catlaser/pl/) and [/en/](https://toniaczlog.github.io/catlaser/en/) routes, an eight-effect browser demo, color/glow/trail controls, four motion previews, mobile sticky download, privacy, release notes and an [SVG press kit](docs/press/).
-
-**App screenshots:** genuine Windows WPF settings capture generated from the EXE in GitHub Actions and stored at `docs/screenshots/settings-0.3.png`. The landing displays this verified screenshot instead of a mockup.
-
-To avoid unnecessary builds: docs changes trigger the small site-check workflow but not the EXE build. A joint 0.3 code update triggers one Windows Release CI and one Pages deploy.
-
-### Adaptive performance (0.3 maintenance)
-
-In manual Real/Neon/Comet mode, CatLaser reduces its dispatcher work to 12 FPS after the cursor and trail are still, then returns to the selected frame rate when motion resumes. The **Adaptive power** toggle in Performance Center enables/disables this behavior. The displayed millisecond value is WPF drawing submission cost, not a GPU benchmark.
+[MIT](LICENSE).

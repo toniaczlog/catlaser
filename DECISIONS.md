@@ -1,23 +1,38 @@
-# Decisions
+# CatLaser — decyzje projektowe
 
-- 2026-10-16: Use native C#/.NET 10 WPF over web/Electron to support click-through desktop rendering.
-- 2026-10-16: Keep a visible Windows cursor replacement instead of hiding the cursor, even on crash.
-- 2026-10-16: Automated modes animate a virtual dot, never move real OS pointer.
-- 2026-10-16: Cat games automatically stop after limited active time, with configurable rests.
-- 2026-10-16: v0.2 is a single bundled feature release; no Vercel deployments.
-- 2026-10-16: Replace per-shape render updates with a single custom WPF drawing surface per monitor, adaptive complexity and selectable FPS caps.
-- 2026-10-16: User presets stored as local JSON, never synced; limited to 25 to avoid unbounded data.
-- 2026-10-16: Distribute `v0.2.0` prerelease with Windows CI compilation; GUI smoke test remains a manual gate for a stable release.
+**Aktualizacja: 2026-10-16** · Aplikacja: **v0.3.0 prerelease** · Strona: GitHub Pages.
 
-- 2026-10-16: v0.2.1 selects Polish automatically on Polish Windows UI culture, otherwise English. Explicit PL/EN choice overrides system locale on subsequent launches and is persisted separately from presets.
-- 2026-10-16: Keep the stable 0.2 animation engine untouched; redesign settings into six sections with static preview and tray translations, minimizing performance risk.
+## Architektura i hosting
 
-- 2026-10-16: Publish CatLaser marketing page via GitHub Pages using `main /docs` static source, no Vercel/Netlify or runtime dependencies.
-- 2026-10-16: PL/EN language selector for website uses browser language on first visit, with a localStorage override; this is separate from Windows app language detection.
-- 2026-10-16: Suppress Windows CI builds for website-only changes to conserve build minutes and avoid accidental duplicate application releases.
+- **2026-10-16:** Natywna aplikacja Windows 10/11 x64: C# / .NET 10 WPF + Win32. Nie używać Electron ani dodatkowego serwera tylko do renderowania lasera.
+- **2026-10-16:** Publiczne repozytorium MIT; dystrybucja self-contained ZIP przez GitHub Releases po pozytywnej kompilacji Windows.
+- **2026-10-16:** Landing jako statyczne HTML/CSS/JS na darmowym GitHub Pages (`main:/docs`), bez npm, płatnego hostingu ani backendu.
+- **2026-10-16:** CI rozdzielone: ścieżki kodu/testów EXE uruchamiają Windows build, ścieżki WWW uruchamiają site validation. Nie generować release EXE przy zmianach samego Markdown.
 
-- 2026-10-16: CatLaser 0.3 adds bounded monitor play region and reusable Playlists; no moving OS cursor, no unbounded runtime.
-- 2026-10-16: Fullscreen-pausing is limited to foreground borderless windows to avoid pausing during ordinary maximized browser windows; must test in live Windows.
-- 2026-10-16: Custom shortcut registration rolls back when any combination conflicts; persist only valid set.
-- 2026-10-16: Landing expands without frameworks or remote tracking. Separate `/pl/`, `/en/` static, indexable pages; press graphics are vector SVG.
-- 2026-10-16: Do not fabricate app screenshots. Landing explicitly labels this user-verified capture as pending.
+## Bezpieczeństwo i prywatność
+
+- **2026-10-16:** Tryb manualny używa **widocznego** kursora Windows; globalnej zmiany nigdy nie zastępować ukryciem kursora. Przywrócenie na starcie, wyłączeniu, zakończeniu i przez `--restore-cursors`.
+- **2026-10-16:** Tryby autonomiczne poruszają tylko wirtualny punkt; nie wykonują ruchu faktyczną myszą.
+- **2026-10-16:** Sesje z limitami czasu i przerwami; bez intensywnego stroboskopu. Ostrzeżenie o pilnowaniu kota przy monitorze i kończeniu zabawy fizyczną zabawką.
+- **2026-10-16:** Presety, playlisty, hotkeys i język przechowywane lokalnie. Brak kont, reklam, telemetrii, abonamentów i synchronizacji.
+
+## Produkt, wersje i UX
+
+- **2026-10-16:** 0.2 zastąpiła wiele WPF shape-controls **jedną powierzchnią renderowania na ekran**, z FPS Eco/Balanced/Ultra oraz oszczędzaniem pracy bezczynnych monitorów.
+- **2026-10-16:** 0.2.1 dodała PL/EN, automatyczny polski na polskim Windows oraz panel z sześcioma uporządkowanymi zakładkami. Ręczny wybór języka zapamiętywany.
+- **2026-10-16:** 0.3 dodaje prostokątny obszar zabawy, wybór monitora, playlisty, ruch Spiral/FigureEight/Orbit, efekty HaloPulse/TwinSpot/LightTunnel/SoftStar, mapowanie sześciu globalnych skrótów i szybkie menu tray.
+- **2026-10-16:** Dodatkowy best-effort fullscreen pause przy bezramkowym pełnym ekranie, bez wpływania na normalne zmaksymalizowane okna; konieczny test na sprzęcie.
+- **2026-10-16:** A13 ogranicza dispatcher do ~12 FPS i zbędne invalidacje wyłącznie dla nieruchomego, ręcznego punktu w statycznych stylach. Nie deklarować poprawy CPU/GPU bez pomiarów.
+- **2026-10-16:** Strona udostępnia osobne trasy SEO `/pl/` i `/en/`, osiem efektów w demie, tryby mini-preview, mobilny CTA, changelog, prywatność i prasowe assety SVG.
+- **2026-10-16:** Demo landingowe przedstawia tylko subtelne oczy podążające za laserem, bez pełnej kreskówkowej sylwetki kota.
+- **2026-10-16:** Na landingu publikować wyłącznie **autentyczne przechwyty programu**. Screenshot `docs/screenshots/settings-0.3.png` powstał z WPF na Windows runnerze, nie z generatora grafik.
+
+## Publikacja i następne sesje
+
+- **2026-10-16:** Wydanie `v0.3.0` pozostaje **prerelease**, bo zielone CI nie zastępuje rzeczywistego smoke-testu Windows.
+- **2026-10-16:** Przed zmianami zawsze sprawdzić bieżący HEAD, CI i asset release. Weryfikować pochodzenie assetu ZIP względem taga; wcześniejszy workflow nadpisywał asset po późniejszym buildzie.
+- **2026-10-16:** Nigdy nie nadpisywać równoległych zmian na main, nie używać force-push.
+- **2026-10-16:** Kolejne prace: najpierw test i ewentualne poprawki regresji 0.3; bez automatycznego rozszerzania funkcji.
+- **2026-10-16:** Reklamy Gemini/Google Flow, darmowy YouTube Shorts/TikTok i krótka domena — **opcje na przyszłość**; nie dokonano zakupów domeny ani kampanii.
+
+Techniczny stan zamknięcia: [HANDOFF.md](HANDOFF.md). Lista kontrolna: [NEXT.md](NEXT.md).
