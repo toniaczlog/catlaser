@@ -1,0 +1,8 @@
+**/bin/
+**/obj/
+.vs/
+.idea/
+*.user
+*.suo
+dist/
+CatLaser-win-x64.zip

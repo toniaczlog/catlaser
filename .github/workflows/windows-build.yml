@@ -1,0 +1,53 @@
+name: Windows build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: catlaser-nightly
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build portable Windows app
+        shell: pwsh
+        run: |
+          dotnet publish CatLaser/CatLaser.csproj --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none --output dist
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Compress-Archive -Path dist/* -DestinationPath CatLaser-win-x64.zip -Force
+
+      - name: Upload CI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CatLaser-win-x64
+          path: CatLaser-win-x64.zip
+          if-no-files-found: error
+
+      - name: Update downloadable nightly release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view nightly --repo "${{ github.repository }}" *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create nightly CatLaser-win-x64.zip --repo "${{ github.repository }}" --target "${{ github.sha }}" --title "CatLaser · nightly" --notes "Automated portable Windows x64 build from the main branch. Not code-signed." --prerelease
+          } else {
+            gh release upload nightly CatLaser-win-x64.zip --repo "${{ github.repository }}" --clobber
+          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
