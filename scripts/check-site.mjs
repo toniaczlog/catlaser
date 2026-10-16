@@ -16,7 +16,7 @@ assert.match(pl, /rel="canonical"/, 'Polish canonical');
 assert.match(en, /rel="canonical"/, 'English canonical');
 assert.match(html, /name="viewport"/, 'Responsive viewport');
 for (const localized of [html, pl, en]) {
-  assert.match(localized, /settings-0\\.3\\.png/, 'Actual WPF settings screenshot on localized landing');
+  assert.match(localized, /settings-0\.3\.png/, 'Actual WPF settings screenshot on localized landing');
   assert.doesNotMatch(localized, /coming soon|w przygotowaniu/i, 'No screenshot placeholder');
 }
 assert.match(html, /CatLaser-0\.3-win-x64\.zip/, 'Download URL');
