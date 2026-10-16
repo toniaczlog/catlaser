@@ -1,45 +1,76 @@
-# CatLaser 🔴
+# CatLaser 0.2 · Laser Playground 🔴
 
-**Turn your Windows mouse cursor into a laser pointer.** A tiny, free, native Windows app with realistic red glow, light trails, three styles, and a cat mode that moves the spot on its own.
+**Turn your mouse into a desktop laser.** Free, local, open-source Windows 10/11 software, built with .NET 10 + WPF + Win32. No accounts, ads or API keys.
 
 [![Windows build](https://github.com/toniaczlog/catlaser/actions/workflows/windows-build.yml/badge.svg)](https://github.com/toniaczlog/catlaser/actions/workflows/windows-build.yml)
 
 ## Download
 
-**[Download latest Windows x64 portable build](https://github.com/toniaczlog/catlaser/releases/tag/nightly)** (from the automated build workflow).
+**[CatLaser v0.2.0 — Windows x64 ZIP](https://github.com/toniaczlog/catlaser/releases/tag/v0.2.0)**
 
-Download `CatLaser-win-x64.zip`, extract it and run `CatLaser.exe`. The app requires Windows 10/11 (x64); no separate .NET installation is required. The binary is **not code-signed**, so Windows SmartScreen might ask you to confirm the download.
+Download `CatLaser-0.2-win-x64.zip`, extract the archive and start `CatLaser.exe`. Self-contained portable application; no separate .NET installation is required. The executable is not code-signed; Windows SmartScreen may warn. The release is marked **prerelease** until an interactive Windows test is performed.
 
-## Features
+## Laser visuals
 
-- Real / Neon / Cyber laser styles
-- Adjustable glow, laser size and fading trail
-- Click-through glow overlay spanning all connected monitors
-- Replaces standard Windows cursor shapes with a **visible** red laser dot while manual mode is on
-- Cat Mode: random, bounded motion; auto-stops after five minutes
-- Toggle with **Ctrl+Alt+L**; use the tray icon to reopen or quit
-- No account, telemetry, ads, network access, or paid APIs
+- Real, Neon and Cyber (original styles)
+- Photoreal: warm bright core, tiny coherent-looking grain and asymmetrical halo
+- Comet: tapered, fading luminous streak
+- Electric: arcing micro-lightning and tiny sparks
+- Prism: three rotating colored dots plus a selectable base color
+- Plasma: living halo with animated rings
+- Shockwaves on clicks and sudden stops, adjustable organic hand-held jitter
+- Adjustable glow, size, trail and six laser colors
 
-## How it works
+## Games (without moving the system mouse)
 
-CatLaser uses C#/.NET 10 and WPF transparent per-monitor windows for the animated effect. The pointer itself is made into a small red dot with the Windows `SetSystemCursor` API, then restored from the current Windows cursor scheme with `SPI_SETCURSORS` when disabled or upon normal exit.
+- **Manual** — red (or selected-color) pointer follows mouse
+- **Ricochet** — laser reflects from screen edges
+- **SmartPrey** — irregular movement, rests, surprise bursts
+- **MouseHunt** — fast zigzags, short hesitations
+- **HideSeek** — virtual dark hiding blocks, occasional hide points
+- **CatchMe** — click/touch-generated click near laser creates catch wave and short freeze
 
-**Important:** native cursor replacement affects the whole Windows desktop, not only this app. If CatLaser closes unexpectedly, the red pointer might remain. It is intentionally **never made invisible**. Start CatLaser again to restore the cursor scheme, or run `CatLaser.exe --restore-cursors`. Restarting Windows or reapplying your preferred cursor theme in Windows Settings also restores it. Custom cursors changed while CatLaser is running may be reset on exit.
+Games always have an automatic end: 30 seconds / 2 minutes / 5 minutes of active play, with optional rests every 20/30/60 seconds.
 
-Cat Mode does **not** move the physical mouse pointer. It animates a virtual laser dot, leaving mouse interaction usable.
+## Performance
 
-## Build from source
+The original WPF overlay used dozens of individual shape controls updated on every frame. CatLaser 0.2 replaces them with **one custom drawing surface per monitor**. Non-active screens skip invalidation. Trail samples are time bounded and draw complexity scales with the performance profile.
+
+Eco (~30 FPS), Balanced (~60 FPS), Ultra (~120 FPS), or manual FPS caps 30/60/120/144. Actual frame rate also depends on Windows and your display.
+
+## Controls
+
+| Hotkey | Action |
+|---|---|
+| Ctrl + Alt + L | Toggle on/off |
+| Ctrl + Alt + E | Next visual style |
+| Ctrl + Alt + C | Next color |
+| Ctrl + Alt + M | Next game mode |
+| Ctrl + Alt + ↑ | Faster |
+| Ctrl + Alt + ↓ | Slower |
+
+Close the settings window to keep CatLaser in the notification area; use the tray icon to reopen or exit.
+
+## Custom presets
+
+Use **My Presets** to store up to 25 combinations, each with style, color, speed, effects, play mode and performance settings. Presets are local JSON data in `%LOCALAPPDATA%\CatLaser\presets.json`.
+
+## Safety and cursor recovery
+
+CatLaser draws through a click-through desktop overlay. In **Manual** mode the normal Windows cursor is replaced by a small **visible** dot using `SetSystemCursor`; it is restored on disable, normal exit and startup via `SPI_SETCURSORS`. This global cursor override can affect all Windows programs. If the app crashes before restoration, restart it or run `CatLaser.exe --restore-cursors`. Reapplying your Windows cursor scheme will also restore it. Native replacement cursors are never hidden.
+
+Automatic games do **not** move your actual mouse. Monitor play sessions to prevent cats from scratching or damaging the screen, and finish with a physical toy/treat they can catch.
+
+## Build
+
+On Windows with .NET 10 SDK:
 
 ```powershell
 dotnet publish CatLaser/CatLaser.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o dist
 ```
 
-Requirements: Windows 10/11 and .NET 10 SDK with Windows Desktop tooling. CI builds on GitHub Actions (Windows runner).
-
-## Cat safety
-
-Supervise your cat near the monitor to avoid scratches or damage. Keep play sessions short (auto mode has a five-minute limit) and finish with a physical toy or treat that the cat can catch. This software does not emit a real laser beam.
+Automated release builds run on GitHub-hosted Windows runners. CI checks the build artifact but cannot verify live mouse interaction. Do a local GUI test before distributing to others.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT.

@@ -1,14 +1,24 @@
-# HANDOFF — CatLaser
+# CatLaser · Handoff (v0.2)
 
-## Current scope
-Windows 10/11 x64 portable laser pointer MVP. .NET 10 WPF + Win32, no external dependencies.
-- Native visible red dot replaces system pointers in manual mode.
-- WPF click-through overlay renders Real / Neon / Cyber with glow/trail on all monitors.
-- Cat Mode is a virtual moving light, limited to five minutes.
-- Tray, Ctrl+Alt+L hotkey, recovery command, CI downloadable nightly ZIP.
+## Repo and runtime
+- `toniaczlog/catlaser`, main, public, MIT.
+- Native WPF/.NET 10 Windows x64 app, self-contained portable zip through GitHub Actions.
+- No Vercel, Netlify, Coolify, Supabase, or secrets.
+- Existing global mouse pointer replacement must always restore on exit/start/disable.
 
-## Deployment
-GitHub Actions on main builds self-contained exe, attaches ZIP artifact, and creates/updates the prerelease tag `nightly`. No Vercel/Netlify/Coolify integration.
+## v0.2 architecture
+- `LaserController`: dispatcher timer, fixed FPS caps, interaction, sessions, rest, tray mode and transitions.
+- `LaserOverlay`: one drawing surface per monitor instead of many individually moving WPF elements; suppress invalidations on inactive monitors.
+- `MotionEngine`: six play behaviors; physical mouse unaffected in automated play.
+- `LaserOptions`: visual style, color, intensity, mode, runtime performance and session settings.
+- `PresetStore`: 25 local JSON presets, sanitize on load, no telemetry.
+- `HotkeyWindow`: L/E/C/M/Up/Down global shortcuts with Ctrl+Alt.
+- `SettingsWindow`: controls, session settings and measured FPS counter.
+
+## CI / release
+- GitHub Actions uses windows-latest, .NET 10; builds `CatLaser-0.2-win-x64.zip`.
+- Publishes `v0.2.0` as prerelease once build succeeds. This does not constitute GUI smoke testing.
 
 ## Verification
-Windows compilation and interactive smoke test must be confirmed on GitHub Actions and Windows. Native cursor restoration and mixed-DPI screens warrant manual testing.
+- Inspect exact SHA and CI logs after push.
+- Smoke test on Windows: manual cursor restore, click-through, overlays, all styles, FPS, rest/automatic stop, multi-monitor and mixed DPI, preset reload, hotkeys, native recovery.

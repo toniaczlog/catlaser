@@ -1,6 +1,10 @@
 # Decisions
 
-- 2026-10-16: Choose native C#/.NET 10 WPF instead of web/Electron to produce a click-through desktop overlay without hosting.
-- 2026-10-16: Use visible replacement cursors instead of hiding the Windows cursor, so an unexpected exit cannot leave an invisible pointer.
-- 2026-10-16: Cat Mode does not control the real mouse and ends automatically after five minutes.
-- 2026-10-16: Build in GitHub Actions, one portable Windows x64 archive under nightly prerelease; avoid Vercel deployments and third-party dependencies.
+- 2026-10-16: Use native C#/.NET 10 WPF over web/Electron to support click-through desktop rendering.
+- 2026-10-16: Keep a visible Windows cursor replacement instead of hiding the cursor, even on crash.
+- 2026-10-16: Automated modes animate a virtual dot, never move real OS pointer.
+- 2026-10-16: Cat games automatically stop after limited active time, with configurable rests.
+- 2026-10-16: v0.2 is a single bundled feature release; no Vercel deployments.
+- 2026-10-16: Replace per-shape render updates with a single custom WPF drawing surface per monitor, adaptive complexity and selectable FPS caps.
+- 2026-10-16: User presets stored as local JSON, never synced; limited to 25 to avoid unbounded data.
+- 2026-10-16: Distribute `v0.2.0` prerelease with Windows CI compilation; GUI smoke test remains a manual gate for a stable release.

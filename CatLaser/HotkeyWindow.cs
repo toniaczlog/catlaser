@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Forms = System.Windows.Forms;
 
@@ -10,26 +11,37 @@ internal sealed class HotkeyWindow : Forms.NativeWindow, IDisposable
     private const uint ModAlt = 0x0001;
     private const uint ModControl = 0x0002;
     private const uint ModNoRepeat = 0x4000;
-    private const int HotkeyId = 1;
-    private readonly Action _toggle;
-    private readonly bool _registered;
+    private readonly Dictionary<int, Action> _registered = new();
 
-    public HotkeyWindow(Action toggle)
+    public HotkeyWindow(Action toggle, Action nextStyle, Action nextColor,
+        Action faster, Action slower, Action nextMode)
     {
-        _toggle = toggle;
-        CreateHandle(new Forms.CreateParams { Caption = "CatLaser Hotkey", Parent = new IntPtr(-3) });
-        _registered = RegisterHotKey(Handle, HotkeyId, ModAlt | ModControl | ModNoRepeat, (uint)Forms.Keys.L);
+        CreateHandle(new Forms.CreateParams { Caption = "CatLaser Hotkeys", Parent = new IntPtr(-3) });
+        Bind(1, Forms.Keys.L, toggle);
+        Bind(2, Forms.Keys.E, nextStyle);
+        Bind(3, Forms.Keys.C, nextColor);
+        Bind(4, Forms.Keys.Up, faster);
+        Bind(5, Forms.Keys.Down, slower);
+        Bind(6, Forms.Keys.M, nextMode);
     }
 
-    protected override void WndProc(ref Forms.Message m)
+    private void Bind(int id, Forms.Keys key, Action action)
     {
-        if (m.Msg == WmHotkey && m.WParam == new IntPtr(HotkeyId)) _toggle();
-        base.WndProc(ref m);
+        if (RegisterHotKey(Handle, id, ModAlt | ModControl | ModNoRepeat, (uint)key))
+            _registered[id] = action;
+    }
+
+    protected override void WndProc(ref Forms.Message message)
+    {
+        if (message.Msg == WmHotkey && _registered.TryGetValue(message.WParam.ToInt32(), out var action))
+            action();
+        base.WndProc(ref message);
     }
 
     public void Dispose()
     {
-        if (_registered) UnregisterHotKey(Handle, HotkeyId);
+        foreach (int id in _registered.Keys) UnregisterHotKey(Handle, id);
+        _registered.Clear();
         DestroyHandle();
     }
 

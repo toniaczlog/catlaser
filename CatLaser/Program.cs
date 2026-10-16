@@ -51,7 +51,7 @@ internal sealed class CatLaserApp : System.Windows.Application
         _trayMenu = new Forms.ContextMenuStrip();
         var show = new Forms.ToolStripMenuItem("Open CatLaser", null, (_, _) => ShowSettings());
         var toggle = new Forms.ToolStripMenuItem("Toggle laser (Ctrl+Alt+L)", null, (_, _) => _controller.Toggle());
-        var catMode = new Forms.ToolStripMenuItem("Cat mode", null, (_, _) => _controller.SetCatMode(!_controller.Options.CatMode));
+        var catMode = new Forms.ToolStripMenuItem("Cat mode · Smart Prey", null, (_, _) => _controller.SetMode(_controller.Options.Mode == PlayMode.Manual ? PlayMode.SmartPrey : PlayMode.Manual));
         var restore = new Forms.ToolStripMenuItem("Restore Windows cursors", null, (_, _) => _controller.SetEnabled(false));
         var quit = new Forms.ToolStripMenuItem("Exit", null, (_, _) => ExitApp());
 
@@ -62,7 +62,7 @@ internal sealed class CatLaserApp : System.Windows.Application
         _controller.Changed += () =>
         {
             toggle.Checked = _controller.Enabled;
-            catMode.Checked = _controller.Options.CatMode;
+            catMode.Checked = _controller.Options.Mode != PlayMode.Manual;
         };
 
         _trayIconHandle = TrayIconFactory.Create();
@@ -76,7 +76,13 @@ internal sealed class CatLaserApp : System.Windows.Application
         };
         _tray.DoubleClick += (_, _) => ShowSettings();
 
-        _hotkey = new HotkeyWindow(() => _controller.Toggle());
+        _hotkey = new HotkeyWindow(
+            () => _controller.Toggle(),
+            () => _controller.CycleStyle(),
+            () => _controller.CycleColor(),
+            () => _controller.AdjustSpeed(10),
+            () => _controller.AdjustSpeed(-10),
+            () => _controller.CycleMode());
         _controller.Start();
         _settingsWindow.Show();
     }

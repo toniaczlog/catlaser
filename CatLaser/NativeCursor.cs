@@ -19,11 +19,11 @@ internal static class NativeCursor
     };
     private const uint SpiSetCursors = 0x0057;
 
-    public static bool Apply()
+    public static bool Apply(int colorIndex)
     {
         foreach (uint id in CursorIds)
         {
-            IntPtr cursor = CreateLaserCursor();
+            IntPtr cursor = CreateLaserCursor(colorIndex);
             if (cursor == IntPtr.Zero || !SetSystemCursor(cursor, id))
             {
                 if (cursor != IntPtr.Zero) DestroyIcon(cursor);
@@ -40,15 +40,24 @@ internal static class NativeCursor
 
     public static void DestroyIconHandle(IntPtr handle) => DestroyIcon(handle);
 
-    private static IntPtr CreateLaserCursor()
+    private static IntPtr CreateLaserCursor(int colorIndex)
     {
         using var bitmap = new Bitmap(32, 32, PixelFormat.Format32bppArgb);
         using (var graphics = Graphics.FromImage(bitmap))
         {
             graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             graphics.Clear(Color.Transparent);
-            using var faint = new SolidBrush(Color.FromArgb(45, 255, 0, 22));
-            using var pink = new SolidBrush(Color.FromArgb(210, 255, 40, 52));
+            Color tone = colorIndex switch
+            {
+                1 => Color.FromArgb(40, 255, 102),
+                2 => Color.FromArgb(49, 150, 255),
+                3 => Color.FromArgb(193, 99, 255),
+                4 => Color.FromArgb(255, 184, 45),
+                5 => Color.FromArgb(41, 231, 235),
+                _ => Color.FromArgb(255, 28, 48)
+            };
+            using var faint = new SolidBrush(Color.FromArgb(45, tone));
+            using var pink = new SolidBrush(Color.FromArgb(210, tone));
             using var white = new SolidBrush(Color.FromArgb(255, 255, 238, 230));
             graphics.FillEllipse(faint, 7, 7, 18, 18);
             graphics.FillEllipse(pink, 12, 12, 8, 8);

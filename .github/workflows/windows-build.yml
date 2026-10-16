@@ -1,4 +1,4 @@
-name: Windows build
+name: CatLaser 0.2 Windows release
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: catlaser-nightly
+  group: catlaser-v02
   cancel-in-progress: true
 
 jobs:
@@ -30,24 +30,28 @@ jobs:
         run: |
           dotnet publish CatLaser/CatLaser.csproj --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none --output dist
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Compress-Archive -Path dist/* -DestinationPath CatLaser-win-x64.zip -Force
+          if (!(Test-Path dist/CatLaser.exe)) { throw 'Missing Windows executable' }
+          $exe = Get-Item dist/CatLaser.exe
+          if ($exe.Length -lt 1000000) { throw 'Unexpectedly small executable' }
+          Compress-Archive -Path dist/* -DestinationPath CatLaser-0.2-win-x64.zip -Force
+          if (!(Test-Path CatLaser-0.2-win-x64.zip)) { throw 'Missing archive' }
 
       - name: Upload CI artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CatLaser-win-x64
-          path: CatLaser-win-x64.zip
+          name: CatLaser-0.2-win-x64
+          path: CatLaser-0.2-win-x64.zip
           if-no-files-found: error
 
-      - name: Update downloadable nightly release
+      - name: Publish CatLaser 0.2 preview release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view nightly --repo "${{ github.repository }}" *> $null
+          gh release view v0.2.0 --repo "${{ github.repository }}" *> $null
           if ($LASTEXITCODE -ne 0) {
-            gh release create nightly CatLaser-win-x64.zip --repo "${{ github.repository }}" --target "${{ github.sha }}" --title "CatLaser · nightly" --notes "Automated portable Windows x64 build from the main branch. Not code-signed." --prerelease
+            gh release create v0.2.0 CatLaser-0.2-win-x64.zip --repo "${{ github.repository }}" --target "${{ github.sha }}" --title "CatLaser 0.2 · Laser Playground" --notes "Performance-oriented renderer, eight effects, six play modes, session timer, presets, global controls and FPS settings. Windows 10/11 x64 portable; no installation required. Preview release: manual Windows smoke test pending. Not code-signed." --prerelease
           } else {
-            gh release upload nightly CatLaser-win-x64.zip --repo "${{ github.repository }}" --clobber
+            gh release upload v0.2.0 CatLaser-0.2-win-x64.zip --repo "${{ github.repository }}" --clobber
           }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
