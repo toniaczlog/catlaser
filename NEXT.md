@@ -8,3 +8,8 @@
 
 6. On Polish Windows verify default Polish on fresh profile, PL/EN toggle, restart persistence, non-Polish fallback, tray menu labels, and navigation sections.
 7. Check at 100%/125%/150% text scaling for clipping and ensure switching language while laser is on never resets the cursor or session.
+
+## Landing page next steps
+- Enable GitHub Pages in Settings → Pages, source `Deploy from a branch`, branch `main`, folder `/docs` (if not already active).
+- Verify actual live URL, mobile layout, both language versions, laser preview and download CTA in a real browser.
+- Prepare 9:16 cat-loving short video concept, Gemini / Google Flow storyboard and prompt(s); link the published landing page in social bio.

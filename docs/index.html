@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f5f1e9">
+<meta name="description" content="CatLaser — darmowy laserowy kursor na Windows. Efekty świetlne, zabawa dla kota, PL/EN, open source.">
+<meta property="og:type" content="website"><meta property="og:title" content="CatLaser — Twój kursor. Jego obsesja."><meta property="og:description" content="Pobierz darmowy laserowy kursor na Windows.">
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<link rel="stylesheet" href="./styles.css"><script defer src="./main.js"></script>
+<title>CatLaser — Twój kursor. Jego obsesja.</title>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">Przejdź do treści</a>
+<header class="site-head"><div class="wrap head-content">
+<a class="brand" href="#top" aria-label="CatLaser"><span class="brand-emblem">●</span>CAT<span>LASER</span><b>.</b></a>
+<nav class="nav" aria-label="Menu"><a href="#features" data-i18n="navFeatures">Możliwości</a><a href="#how" data-i18n="navHow">Jak działa</a><a href="#faq">FAQ</a></nav>
+<div class="head-right"><div class="locale" role="group" aria-label="Language / Język"><button data-lang="pl" aria-pressed="true">PL</button><span>/</span><button data-lang="en" aria-pressed="false">EN</button></div><a class="head-download" href="https://github.com/toniaczlog/catlaser/releases/tag/v0.2.1" data-i18n="navDownload">Pobierz ↗</a></div>
+</div></header>
+<main id="main">
+<section class="hero wrap" id="top"><div class="hero-copy"><span class="kicker"><i></i><span data-i18n="kicker">MAŁA APLIKACJA. WIELKA FRAJDA.</span></span>
+<h1 data-i18n-html="heroTitle">Twój kursor.<br><em>Jego nowa</em><br>obsesja<span class="dot">.</span></h1>
+<p data-i18n="heroIntro">Zamień zwykłą strzałkę myszy w świecący laser. Ruszaj nim po ekranie, wybieraj efekt albo pozwól, by światło samo poprowadziło zabawę.</p>
+<div class="actions"><a class="btn primary" href="https://github.com/toniaczlog/catlaser/releases/download/v0.2.1/CatLaser-0.2.1-win-x64.zip"><span aria-hidden="true">↓</span><span data-i18n="download">Pobierz za darmo</span></a><a class="btn secondary" href="https://github.com/toniaczlog/catlaser" target="_blank" rel="noopener noreferrer">⌘ GitHub ↗</a></div>
+<div class="facts"><span>✓ Windows 10 / 11</span><span>✓ <span data-i18n="free">Bezpłatny i open source</span></span><span>✓ PL / EN</span></div>
+</div>
+<div class="showcase"><div class="showcase-head"><span><i class="live-dot"></i><span data-i18n="live">INTERAKTYWNE DEMO</span></span><span>CATLASER / 02.1</span></div>
+<div class="demo" id="demo" role="group" tabindex="0" aria-label="Podgląd lasera. Porusz myszą lub dotknij.">
+<div class="grid-bg"></div><div class="demo-hint" data-i18n="hint">PORUSZ MYSZĄ TUTAJ ↗</div>
+<svg class="cat" viewBox="0 0 360 320" aria-label="Kot obserwuje laser" role="img"><defs><linearGradient id="fur" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#283648"/><stop offset="1" stop-color="#121b29"/></linearGradient></defs><path d="M207 231C198 172 232 143 270 159c37 14 50 43 47 77-5 39-97 42-110-5Z" fill="url(#fur)"/><path d="M288 189c36-10 56 6 50 28-4 16-18 22-31 17" stroke="#283648" stroke-width="22" stroke-linecap="round" fill="none"/><path d="M205 187l-12-69 44 29c19-11 43-10 61-2l35-29-5 75c6 35-20 58-64 60-47 0-69-21-59-64Z" fill="url(#fur)"/><path d="M204 155l-5-25 23 16 88 0 13-15-2 27" fill="#9e737c"/><path d="M234 192q12-7 24 0m25 0q14-9 26-1" stroke="#b2f4bd" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M260 210l7 6 7-6Z" fill="#efa8aa"/><path d="M264 217q-11 13-24 3m29-3q12 12 22 3" stroke="#808994" stroke-width="2" fill="none"/><path d="M256 216l-43-7m43 13l-39 8m59-14 44-7m-44 13 40 8" stroke="#647486" stroke-width="1.6"/><path d="M226 244q-8 34 7 40h25q12-18-3-37m30-3q-10 34 1 40h25" fill="url(#fur)" stroke="#182231" stroke-width="2"/></svg>
+<canvas id="laser-preview" aria-hidden="true"></canvas><span class="demo-bottom" data-i18n="demoBottom">KLIKNIJ LUB DOTKNIJ, ABY PRZESUNĄĆ</span></div>
+<div class="demo-controls"><b data-i18n="effectsLabel">WYBIERZ EFEKT</b><div><button class="selected" data-fx="real" aria-pressed="true">REAL</button><button data-fx="comet" aria-pressed="false">COMET</button><button data-fx="electric" aria-pressed="false">ELECTRIC</button></div></div><p class="demo-note" data-i18n="demoNote">Podgląd w przeglądarce. Pełna aplikacja działa na pulpicie Windows.</p>
+</div></section>
+<div class="ribbon" aria-hidden="true">LASER FX <span>✳</span> CAT MODE <span>✳</span> OPEN SOURCE <span>✳</span> NO SUBSCRIPTION <span>✳</span> LASER FX <span>✳</span> CAT MODE</div>
+<section id="features" class="section wrap"><div class="section-top"><div><span class="kicker"><i></i><span data-i18n="featuresKicker">NIE TYLKO CZERWONA KROPKA</span></span><h2 data-i18n-html="featuresTitle">Mały program.<br><em>Mnóstwo frajdy.</em></h2></div><p data-i18n="featuresIntro">Efekty świetlne, automatyczne gonitwy i pełna kontrola nad wyglądem. Bez reklam, kont i abonamentów.</p></div>
+<div class="cards">
+<article class="feature"><span class="num">01 / FX</span><div class="art glow"><i></i></div><h3 data-i18n="f1Title">8 efektów lasera</h3><p data-i18n="f1Body">Poświata, komety, iskry, plazma, pryzmat i fale świetlne. Wybierz swój styl.</p></article>
+<article class="feature green"><span class="num">02 / PLAY</span><div class="art"><svg viewBox="0 0 250 140" aria-hidden="true"><path d="M13 116c35-102 50 20 82-42s50 12 73-30 41 39 65-7" stroke="#79c98a" stroke-width="3" stroke-dasharray="5 7" fill="none"/><circle cx="164" cy="40" r="22" fill="#ff4d64" opacity=".18"/><circle cx="164" cy="40" r="6" fill="#fb3f54"/></svg></div><h3 data-i18n="f2Title">5 trybów dla kota</h3><p data-i18n="f2Body">Laser ucieka, odbija się, chowa i nagle zmienia kierunek. Z przerwami i limitem czasu.</p></article>
+<article class="feature violet"><span class="num">03 / TUNE</span><div class="art dials"><span><i></i></span><span><i></i></span><span><i></i></span><div class="color-dots">● ● ● ●</div></div><h3 data-i18n="f3Title">Pełna personalizacja</h3><p data-i18n="f3Body">Kolory, szybkość, rozmiar, jasność, ślady i FPS. Zapisuj swoje presety.</p></article>
+</div></section>
+<section id="how" class="dark-panel"><div class="wrap how"><div><span class="kicker"><i></i><span data-i18n="howKicker">TRZY PROSTE KROKI</span></span><h2 data-i18n-html="howTitle">Pobierz.<br>Włącz.<br><em>Polowanie!</em></h2><p data-i18n="howBody">Zero konfiguracji serwera. Tylko Windows, myszka i ciekawski kot.</p></div><div class="steps"><div><b>01</b><aside><h3 data-i18n="s1Title">Pobierz ZIP</h3><p data-i18n="s1Body">Pobierz darmową wersję z GitHub Releases i rozpakuj ją.</p></aside></div><div><b>02</b><aside><h3 data-i18n="s2Title">Uruchom CatLaser.exe</h3><p data-i18n="s2Body">Bez instalatora i dodatkowego środowiska .NET. Program działa przy zegarze Windows.</p></aside></div><div><b>03</b><aside><h3 data-i18n="s3Title">Wybierz tryb zabawy</h3><p data-i18n="s3Body">Ruszaj laserem sam albo włącz automatyczny tryb dla kota.</p></aside></div></div></div></section>
+<section id="faq" class="section faq wrap"><span class="kicker"><i></i><span data-i18n="faqKicker">DOBRZE WIEDZIEĆ</span></span><h2 data-i18n="faqTitle">Pytania i odpowiedzi.</h2>
+<details><summary data-i18n="q1">Czy CatLaser jest darmowy?</summary><p data-i18n="a1">Tak. Jest bezpłatny, open source (MIT), bez reklam i bez subskrypcji.</p></details>
+<details><summary data-i18n="q2">Czy muszę instalować program?</summary><p data-i18n="a2">Nie. Wystarczy pobrać ZIP, rozpakować i uruchomić CatLaser.exe na Windows 10/11 x64.</p></details>
+<details><summary data-i18n="q3">Dlaczego Windows SmartScreen może ostrzegać?</summary><p data-i18n="a3">Plik EXE nie jest jeszcze podpisany cyfrowo. Kod źródłowy jest publiczny na GitHubie, a aplikację kompiluje GitHub Actions.</p></details>
+<details><summary data-i18n="q4">Czy to bezpieczne dla kota?</summary><p data-i18n="a4">Program nie emituje prawdziwego lasera — wyświetla efekt na monitorze. Pilnuj jednak, aby kot nie drapał ekranu, rób krótkie sesje i zakończ zabawę prawdziwą zabawką do złapania.</p></details>
+<details><summary data-i18n="q5">Jak wyłączyć laser?</summary><p data-i18n="a5">Ctrl + Alt + L lub menu programu przy zegarze. Wyjście przywraca kursory Windows. Po awaryjnym zamknięciu można uruchomić CatLaser ponownie, aby przywrócić kursory.</p></details>
+</section>
+<section class="ending wrap"><div><span class="kicker"><i></i><span data-i18n="endingKicker">TWÓJ KOT MA PLAN NA WIECZÓR</span></span><h2 data-i18n-html="endingTitle">Gotowi na<br><em>gonitwę?</em></h2><p>CatLaser 0.2.1 · Windows · PL / EN</p></div><div><a class="btn ending-button" href="https://github.com/toniaczlog/catlaser/releases/download/v0.2.1/CatLaser-0.2.1-win-x64.zip"><span aria-hidden="true">↓</span><span data-i18n="download">Pobierz za darmo</span></a><small data-i18n="prerelease">Wersja testowa · niepodpisany EXE</small></div></section>
+</main>
+<footer class="wrap foot"><div class="brand"><span class="brand-emblem">●</span>CAT<span>LASER</span><b>.</b></div><p data-i18n="footer">Dla kotów, ciekawskich ludzi i miłośników światła.</p><a href="https://github.com/toniaczlog/catlaser" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="https://github.com/toniaczlog/catlaser/releases" target="_blank" rel="noopener noreferrer">Releases ↗</a><span>MIT · 2026</span></footer>
+</body></html>

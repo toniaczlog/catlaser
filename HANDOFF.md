@@ -30,3 +30,11 @@
 - `Program.cs`: tray menu titles and tooltip follow current language.
 - `tests/LocalizationSmoke`: no-NuGet assertions for pl-PL default, override, translated strings and change event.
 - Release `v0.2.1` remains prerelease until a human tests Polish Windows UI and manual switching.
+
+## Landing page / GitHub Pages (2026-10-16)
+- Static landing in `docs/index.html`, `docs/styles.css`, `docs/main.js`, `docs/favicon.svg`, `docs/.nojekyll`.
+- Bilingual PL/EN: browser locale for first visit; explicit selection saved to localStorage.
+- Live canvas preview with Real / Comet / Electric. Animation pauses offscreen/reduced-motion. No external fonts, trackers or analytics.
+- Direct download targets verified `v0.2.1` GitHub Release. Update version/link in HTML when publishing a newer EXE.
+- GitHub Pages configured for `main /docs` requires one-time repository Settings → Pages activation if not previously enabled. Do not claim the URL is live before confirming an actual HTTP response.
+- Website CI is path-scoped; Windows CI ignores docs-only changes.

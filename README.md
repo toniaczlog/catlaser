@@ -82,3 +82,18 @@ Automated release builds run on GitHub-hosted Windows runners. CI checks the bui
 ## License
 
 MIT.
+
+## Website · GitHub Pages
+
+The bilingual PL/EN landing page lives in [`docs/`](docs/). It is plain HTML, CSS and JavaScript — zero npm dependencies, paid hosting or telemetry. It includes a live laser demo and a direct Windows download link.
+
+**One-time GitHub Pages setup** (requires repository admin in GitHub UI):
+1. Open [Settings → Pages](https://github.com/toniaczlog/catlaser/settings/pages).
+2. Under **Build and deployment**, select **Deploy from a branch**.
+3. Branch: `main`, folder: `/docs`, then **Save**.
+4. When Pages finishes publishing, the expected site address is `https://toniaczlog.github.io/catlaser/`. Confirm the actual URL in Pages settings before sharing publicly.
+
+Subsequent edits to `docs/` publish from the same repository automatically. The Windows build workflow is path-filtered so docs-only commits do not rebuild the EXE.
+
+To validate a site edit: `node --check docs/main.js && node scripts/check-site.mjs`.
+The language selector defaults to the visitor's preferred browser language (PL or EN), and persists the selected language in browser localStorage.

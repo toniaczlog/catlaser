@@ -11,3 +11,7 @@
 
 - 2026-10-16: v0.2.1 selects Polish automatically on Polish Windows UI culture, otherwise English. Explicit PL/EN choice overrides system locale on subsequent launches and is persisted separately from presets.
 - 2026-10-16: Keep the stable 0.2 animation engine untouched; redesign settings into six sections with static preview and tray translations, minimizing performance risk.
+
+- 2026-10-16: Publish CatLaser marketing page via GitHub Pages using `main /docs` static source, no Vercel/Netlify or runtime dependencies.
+- 2026-10-16: PL/EN language selector for website uses browser language on first visit, with a localStorage override; this is separate from Windows app language detection.
+- 2026-10-16: Suppress Windows CI builds for website-only changes to conserve build minutes and avoid accidental duplicate application releases.

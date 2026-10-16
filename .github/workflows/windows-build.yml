@@ -3,6 +3,9 @@ name: CatLaser 0.2.1 Windows release
 on:
   push:
     branches: [main]
+    paths:
+      - 'CatLaser/**'
+      - 'tests/**'
   workflow_dispatch:
 
 permissions:
