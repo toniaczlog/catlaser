@@ -1,3 +1,4 @@
+using Point = System.Windows.Point;
 using System;
 using System.Windows;
 

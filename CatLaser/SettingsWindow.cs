@@ -1,3 +1,9 @@
+using Brush = System.Windows.Media.Brush;
+using Button = System.Windows.Controls.Button;
+using CheckBox = System.Windows.Controls.CheckBox;
+using Color = System.Windows.Media.Color;
+using FontFamily = System.Windows.Media.FontFamily;
+using Brushes = System.Windows.Media.Brushes;
 using System;
 using System.Collections.Generic;
 using System.Windows;
