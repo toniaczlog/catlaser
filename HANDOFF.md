@@ -22,3 +22,11 @@
 ## Verification
 - Inspect exact SHA and CI logs after push.
 - Smoke test on Windows: manual cursor restore, click-through, overlays, all styles, FPS, rest/automatic stop, multi-monitor and mixed DPI, preset reload, hotkeys, native recovery.
+
+## v0.2.1 localization and UI
+- `UiText` contains PL/EN translations and checks Windows `CurrentUICulture` on first launch.
+- Overrides persist at `%LOCALAPPDATA%\\CatLaser\\language.txt`, distinct from laser presets.
+- Rebuilt `SettingsWindow`: compact fixed status header and six navigable tabs; language switch rebuilds only window controls, not laser overlay.
+- `Program.cs`: tray menu titles and tooltip follow current language.
+- `tests/LocalizationSmoke`: no-NuGet assertions for pl-PL default, override, translated strings and change event.
+- Release `v0.2.1` remains prerelease until a human tests Polish Windows UI and manual switching.

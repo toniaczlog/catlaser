@@ -1,4 +1,4 @@
-# CatLaser 0.2 · Laser Playground 🔴
+# CatLaser 0.2.1 · Laser Playground 🔴
 
 **Turn your mouse into a desktop laser.** Free, local, open-source Windows 10/11 software, built with .NET 10 + WPF + Win32. No accounts, ads or API keys.
 
@@ -6,9 +6,17 @@
 
 ## Download
 
-**[CatLaser v0.2.0 — Windows x64 ZIP](https://github.com/toniaczlog/catlaser/releases/tag/v0.2.0)**
+**[CatLaser v0.2.1 — Windows x64 ZIP](https://github.com/toniaczlog/catlaser/releases/tag/v0.2.1)**
 
-Download `CatLaser-0.2-win-x64.zip`, extract the archive and start `CatLaser.exe`. Self-contained portable application; no separate .NET installation is required. The executable is not code-signed; Windows SmartScreen may warn. The release is marked **prerelease** until an interactive Windows test is performed.
+Download `CatLaser-0.2.1-win-x64.zip`, extract the archive and start `CatLaser.exe`. Self-contained portable application; no separate .NET installation is required. The executable is not code-signed; Windows SmartScreen may warn. The release is marked **prerelease** until an interactive Windows test is performed.
+
+## Język polski / English
+
+- When Windows UI language is Polish (`pl-PL`), CatLaser automatically starts in Polish; other Windows display languages default to English.
+- Click **PL / EN** in the top-right corner to switch immediately. This choice is saved to `%LOCALAPPDATA%\\CatLaser\\language.txt` and overrides the system language on later launches.
+- The Windows notification-area menu, statuses, explanations, all game modes, presets and settings are translated.
+- The new dashboard separates **Laser**, **Cat games**, **Sessions**, **Performance**, **My presets** and **Shortcuts** for less scrolling.
+- No changes to the animation engine or system pointer recovery behavior.
 
 ## Laser visuals
 

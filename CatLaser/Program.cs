@@ -49,11 +49,11 @@ internal sealed class CatLaserApp : System.Windows.Application
         };
 
         _trayMenu = new Forms.ContextMenuStrip();
-        var show = new Forms.ToolStripMenuItem("Open CatLaser", null, (_, _) => ShowSettings());
-        var toggle = new Forms.ToolStripMenuItem("Toggle laser (Ctrl+Alt+L)", null, (_, _) => _controller.Toggle());
-        var catMode = new Forms.ToolStripMenuItem("Cat mode · Smart Prey", null, (_, _) => _controller.SetMode(_controller.Options.Mode == PlayMode.Manual ? PlayMode.SmartPrey : PlayMode.Manual));
-        var restore = new Forms.ToolStripMenuItem("Restore Windows cursors", null, (_, _) => _controller.SetEnabled(false));
-        var quit = new Forms.ToolStripMenuItem("Exit", null, (_, _) => ExitApp());
+        var show = new Forms.ToolStripMenuItem(UiText.T("tray_open"), null, (_, _) => ShowSettings());
+        var toggle = new Forms.ToolStripMenuItem(UiText.T("tray_toggle"), null, (_, _) => _controller.Toggle());
+        var catMode = new Forms.ToolStripMenuItem(UiText.T("tray_cat"), null, (_, _) => _controller.SetMode(_controller.Options.Mode == PlayMode.Manual ? PlayMode.SmartPrey : PlayMode.Manual));
+        var restore = new Forms.ToolStripMenuItem(UiText.T("tray_restore"), null, (_, _) => _controller.SetEnabled(false));
+        var quit = new Forms.ToolStripMenuItem(UiText.T("tray_exit"), null, (_, _) => ExitApp());
 
         _trayMenu.Items.AddRange(new Forms.ToolStripItem[]
         {
@@ -70,11 +70,21 @@ internal sealed class CatLaserApp : System.Windows.Application
         _tray = new Forms.NotifyIcon
         {
             Icon = _trayIcon,
-            Text = "CatLaser — laser pointer for Windows",
+            Text = UiText.T("tray_tooltip"),
             Visible = true,
             ContextMenuStrip = _trayMenu
         };
         _tray.DoubleClick += (_, _) => ShowSettings();
+
+        UiText.LanguageChanged += () =>
+        {
+            show.Text = UiText.T("tray_open");
+            toggle.Text = UiText.T("tray_toggle");
+            catMode.Text = UiText.T("tray_cat");
+            restore.Text = UiText.T("tray_restore");
+            quit.Text = UiText.T("tray_exit");
+            if (_tray is not null) _tray.Text = UiText.T("tray_tooltip");
+        };
 
         _hotkey = new HotkeyWindow(
             () => _controller.Toggle(),

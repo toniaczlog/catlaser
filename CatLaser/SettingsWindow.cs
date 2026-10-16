@@ -3,345 +3,665 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
-using Button = System.Windows.Controls.Button;
-using CheckBox = System.Windows.Controls.CheckBox;
-using ComboBox = System.Windows.Controls.ComboBox;
+using Color = System.Windows.Media.Color;
 using FontFamily = System.Windows.Media.FontFamily;
+using Button = System.Windows.Controls.Button;
+using ComboBox = System.Windows.Controls.ComboBox;
+using CheckBox = System.Windows.Controls.CheckBox;
 using TextBox = System.Windows.Controls.TextBox;
 
 namespace CatLaser;
 
+/// <summary>
+/// Compact, bilingual settings dashboard. Rendering/animation stays in LaserOverlay;
+/// changing language rebuilds UI chrome without resetting the active laser session.
+/// </summary>
 internal sealed class SettingsWindow : Window
 {
-    private static readonly Brush Back = Hex("#11131B");
-    private static readonly Brush Panel = Hex("#1D222F");
-    private static readonly Brush Fore = Hex("#F4F3F7");
-    private static readonly Brush Muted = Hex("#ADB4C2");
-    private static readonly Brush Accent = Hex("#FE425B");
+    private static readonly Brush Back = Solid("#10131B");
+    private static readonly Brush Sidebar = Solid("#171B25");
+    private static readonly Brush CardFill = Solid("#1D2330");
+    private static readonly Brush BorderFill = Solid("#343B4A");
+    private static readonly Brush Fore = Solid("#F5F6FA");
+    private static readonly Brush Muted = Solid("#B1B8C7");
+    private static readonly Brush Accent = Solid("#FF465E");
+    private static readonly Brush Inactive = Solid("#323B4E");
+
     private readonly LaserController _controller;
     private readonly Action _exit;
     private readonly PresetStore _presets = new();
     private readonly Dictionary<string, Slider> _sliders = new();
-    private readonly Dictionary<string, CheckBox> _toggles = new();
     private readonly Dictionary<string, ComboBox> _choices = new();
-    private readonly TextBlock _status;
-    private readonly TextBlock _stats;
-    private readonly TextBlock _feedback;
-    private readonly Button _power;
-    private readonly ComboBox _presetList;
-    private readonly TextBox _presetName;
+    private readonly Dictionary<string, CheckBox> _toggles = new();
+    private readonly List<(Button Button, int Index, string Group)> _options = new();
+    private readonly List<Button> _navigation = new();
+
+    private ScrollViewer _pageScroll = null!;
+    private TextBlock _status = null!;
+    private TextBlock _stats = null!;
+    private TextBlock _feedback = null!;
+    private Button _power = null!;
+    private TextBox? _presetName;
+    private ComboBox? _presetList;
+    private Ellipse? _previewGlow;
+    private Ellipse? _previewCore;
     private bool _syncing;
+    private int _page;
 
     public SettingsWindow(LaserController controller, Action exit)
     {
-        _controller = controller; _exit = exit;
-        Title = "CatLaser 0.2 · Laser Playground";
-        Width = 535; Height = 840;
-        MinWidth = 410; MinHeight = 590;
+        _controller = controller;
+        _exit = exit;
+        Width = 875;
+        Height = 710;
+        MinWidth = 695;
+        MinHeight = 570;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        Background = Back; Foreground = Fore;
         FontFamily = new FontFamily("Segoe UI");
+        Background = Back;
+        Foreground = Fore;
 
-        var root = new ScrollViewer
+        _controller.Changed += RefreshState;
+        UiText.LanguageChanged += LanguageChanged;
+        BuildShell();
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        _controller.Changed -= RefreshState;
+        UiText.LanguageChanged -= LanguageChanged;
+        base.OnClosed(e);
+    }
+
+    private void LanguageChanged()
+    {
+        // Keep the current page and live laser untouched.
+        BuildShell();
+    }
+
+    private void BuildShell()
+    {
+        Title = UiText.T("window_title");
+        _navigation.Clear();
+        var root = new Grid();
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(82) });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(105) });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(33) });
+        Content = root;
+
+        // Header: brand on the left, an explicit language switch on the right.
+        var header = new Grid { Background = Back, Margin = new Thickness(25, 11, 25, 5) };
+        header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        var brand = new Grid { Width = 49, Height = 49, Margin = new Thickness(0, 0, 13, 0) };
+        brand.Children.Add(new Ellipse { Width = 39, Height = 39, Fill = Halo(Color.FromRgb(255, 49, 71)) });
+        brand.Children.Add(new Ellipse { Width = 9, Height = 9, Fill = Brushes.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center });
+        header.Children.Add(brand);
+        var brandCopy = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        brandCopy.Children.Add(Label("CATLASER", Fore, 20, FontWeights.Bold));
+        brandCopy.Children.Add(Label(UiText.T("tagline"), Muted, 12, FontWeights.Normal));
+        Grid.SetColumn(brandCopy, 1);
+        header.Children.Add(brandCopy);
+
+        var language = new Button
+        {
+            Content = UiText.Current == "pl" ? "PL  /  EN" : "EN  /  PL",
+            Width = 95, Height = 35, Background = CardFill, Foreground = Fore,
+            BorderBrush = BorderFill, BorderThickness = new Thickness(1),
+            FontWeight = FontWeights.SemiBold, FontSize = 12,
+            Cursor = System.Windows.Input.Cursors.Hand,
+            ToolTip = UiText.T("language"),
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        language.Click += (_, _) => UiText.SetLanguage(UiText.Current == "pl" ? "en" : "pl");
+        Grid.SetColumn(language, 2);
+        header.Children.Add(language);
+        root.Children.Add(header);
+
+        // Compact status bar is always visible, regardless of active page.
+        var hero = new Grid { Margin = new Thickness(24, 2, 24, 12) };
+        hero.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        hero.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        var heroBorder = new Border
+        {
+            Background = CardFill, BorderBrush = BorderFill, BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(13), Child = hero, Margin = new Thickness(23, 0, 23, 0)
+        };
+        var statusPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(20, 10, 10, 10) };
+        _status = Label("", Fore, 14, FontWeights.SemiBold);
+        _stats = Label("", Muted, 12, FontWeights.Normal, 4);
+        statusPanel.Children.Add(_status);
+        statusPanel.Children.Add(_stats);
+        hero.Children.Add(statusPanel);
+        _power = ActionButton("", () => _controller.Toggle(), true);
+        _power.Width = 175;
+        _power.Height = 43;
+        _power.Margin = new Thickness(10, 0, 16, 0);
+        _power.VerticalAlignment = VerticalAlignment.Center;
+        Grid.SetColumn(_power, 1);
+        hero.Children.Add(_power);
+        Grid.SetRow(heroBorder, 1);
+        root.Children.Add(heroBorder);
+
+        var workspace = new Grid { Margin = new Thickness(24, 0, 24, 0) };
+        workspace.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(180) });
+        workspace.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        var sidebarBorder = new Border
+        {
+            Background = Sidebar, BorderBrush = BorderFill, BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(11),
+            Margin = new Thickness(0, 0, 11, 0)
+        };
+        var navStack = new StackPanel { Margin = new Thickness(9, 13, 9, 9) };
+        string[] navKeys =
+        {
+            "side_appearance", "side_cat", "side_session",
+            "side_performance", "side_presets", "side_help"
+        };
+        for (int i = 0; i < navKeys.Length; i++)
+        {
+            int index = i;
+            var navButton = new Button
+            {
+                Content = UiText.T(navKeys[i]), Height = 43,
+                HorizontalContentAlignment = HorizontalAlignment.Left,
+                Padding = new Thickness(13, 0, 5, 0),
+                Margin = new Thickness(0, 2, 0, 2),
+                Background = Brushes.Transparent, Foreground = Muted,
+                BorderThickness = new Thickness(0),
+                FontSize = 13, FontWeight = FontWeights.SemiBold,
+                Cursor = System.Windows.Input.Cursors.Hand
+            };
+            navButton.Click += (_, _) => Navigate(index);
+            _navigation.Add(navButton);
+            navStack.Children.Add(navButton);
+        }
+        sidebarBorder.Child = navStack;
+        workspace.Children.Add(sidebarBorder);
+
+        _pageScroll = new ScrollViewer
         {
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Background = Brushes.Transparent
         };
-        Content = root;
-        var body = new StackPanel { Margin = new Thickness(28, 23, 28, 28) };
-        root.Content = body;
+        var pageBorder = new Border
+        {
+            Background = Sidebar, BorderBrush = BorderFill,
+            BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(11),
+            Child = _pageScroll, Margin = new Thickness(0)
+        };
+        Grid.SetColumn(pageBorder, 1);
+        workspace.Children.Add(pageBorder);
+        Grid.SetRow(workspace, 2);
+        root.Children.Add(workspace);
 
-        body.Children.Add(Text("CATLASER / VERSION 0.2", Accent, 12, FontWeights.Bold));
-        body.Children.Add(Text("Laser Playground", Fore, 30, FontWeights.Bold, 5, 5));
-        body.Children.Add(Text("A smoother pointer. More magic. More cat games.", Muted, 13, FontWeights.Normal, 0, 12));
-        _status = Text("", Muted, 12, FontWeights.Normal, 0, 7);
-        body.Children.Add(_status);
-        _stats = Text("", Accent, 12, FontWeights.SemiBold, 0, 12);
-        body.Children.Add(_stats);
+        var footer = Label(UiText.T("footer"), Muted, 10, FontWeights.Normal);
+        footer.TextAlignment = TextAlignment.Right;
+        footer.Margin = new Thickness(0, 7, 28, 0);
+        Grid.SetRow(footer, 3);
+        root.Children.Add(footer);
 
-        _power = ActionButton("TOGGLE LASER", () => _controller.Toggle(), true);
-        body.Children.Add(_power);
+        Navigate(_page);
+        RefreshState();
+    }
 
-        Section(body, "LIGHT ENGINE", "Choose the glow, shape, texture and color.");
-        body.Children.Add(Choice("Style", "style", Enum.GetNames<LaserStyle>(),
-            (int)_controller.Options.Style, i => _controller.ChangeStyle((LaserStyle)i)));
-        body.Children.Add(Choice("Color", "color", new[] { "Red", "Green", "Blue", "Violet", "Amber", "Cyan" },
+    private void Navigate(int target)
+    {
+        _page = Math.Clamp(target, 0, 5);
+        _sliders.Clear();
+        _choices.Clear();
+        _toggles.Clear();
+        _options.Clear();
+        _presetName = null;
+        _presetList = null;
+        _previewGlow = null;
+        _previewCore = null;
+        for (int i = 0; i < _navigation.Count; i++)
+        {
+            bool selected = i == _page;
+            _navigation[i].Background = selected ? Solid("#36313D") : Brushes.Transparent;
+            _navigation[i].Foreground = selected ? Fore : Muted;
+            _navigation[i].BorderBrush = selected ? Accent : Brushes.Transparent;
+            _navigation[i].BorderThickness = selected ? new Thickness(3, 0, 0, 0) : new Thickness(0);
+        }
+
+        var body = new StackPanel { Margin = new Thickness(25, 23, 25, 25) };
+        switch (_page)
+        {
+            case 0: BuildAppearance(body); break;
+            case 1: BuildCat(body); break;
+            case 2: BuildSession(body); break;
+            case 3: BuildPerformance(body); break;
+            case 4: BuildPresets(body); break;
+            default: BuildHelp(body); break;
+        }
+        _pageScroll.Content = body;
+        _pageScroll.ScrollToTop();
+        RefreshState();
+    }
+
+    private void PageTitle(StackPanel body, string title, string description)
+    {
+        body.Children.Add(Label(UiText.T(title), Fore, 23, FontWeights.Bold, 0, 5));
+        body.Children.Add(Label(UiText.T(description), Muted, 12, FontWeights.Normal, 0, 17));
+    }
+
+    private void BuildAppearance(StackPanel body)
+    {
+        PageTitle(body, "head_appearance", "desc_appearance");
+        // A compact nonanimated preview (does not create another frame loop).
+        var preview = new Grid { Height = 105 };
+        _previewGlow = new Ellipse { Width = 105, Height = 105, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+        _previewCore = new Ellipse { Width = 9, Height = 9, Fill = Brushes.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+        preview.Children.Add(_previewGlow);
+        preview.Children.Add(_previewCore);
+        var previewCard = Card(preview);
+        previewCard.Margin = new Thickness(0, 0, 0, 16);
+        body.Children.Add(previewCard);
+        body.Children.Add(Label(UiText.T("label_style"), Fore, 13, FontWeights.SemiBold, 0, 9));
+        body.Children.Add(OptionButtons("style", new[]
+        {
+            "style_real", "style_neon", "style_cyber", "style_photoreal",
+            "style_comet", "style_electric", "style_prism", "style_plasma"
+        }, (int)_controller.Options.Style, i => _controller.ChangeStyle((LaserStyle)i)));
+        body.Children.Add(Choice("label_color", "color",
+            new[] { "color_red", "color_green", "color_blue", "color_violet", "color_amber", "color_cyan" },
             _controller.Options.ColorIndex, _controller.SetColor));
-        body.Children.Add(Toggle("Light trail", "trail", _controller.Options.TrailEnabled, v =>
-        {
-            _controller.Options.TrailEnabled = v; _controller.RefreshSettings();
-        }));
-        body.Children.Add(Toggle("Shockwave on click or sudden stop", "wave",
-            _controller.Options.ShockwaveEnabled, v =>
-        {
-            _controller.Options.ShockwaveEnabled = v; _controller.RefreshSettings();
-        }));
-        body.Children.Add(SliderRow("Glow intensity", "glow", _controller.Options.Glow,
-            v => { _controller.Options.Glow = v; _controller.RefreshSettings(); }));
-        body.Children.Add(SliderRow("Dot size", "size", _controller.Options.Size,
-            v => { _controller.Options.Size = v; _controller.RefreshSettings(); }));
-        body.Children.Add(SliderRow("Trail length", "trailLength", _controller.Options.TrailLength,
-            v => { _controller.Options.TrailLength = v; _controller.RefreshSettings(); }));
-        body.Children.Add(SliderRow("Organic jitter", "jitter", _controller.Options.Jitter,
-            v => { _controller.Options.Jitter = v; _controller.RefreshSettings(); }));
+        body.Children.Add(SliderGrid(
+            SliderRow("label_glow", "glow", _controller.Options.Glow, v => Update(o => o.Glow = v)),
+            SliderRow("label_size", "size", _controller.Options.Size, v => Update(o => o.Size = v)),
+            SliderRow("label_trail", "trailLength", _controller.Options.TrailLength, v => Update(o => o.TrailLength = v)),
+            SliderRow("label_jitter", "jitter", _controller.Options.Jitter, v => Update(o => o.Jitter = v))));
+        body.Children.Add(Toggle("toggle_trail", "trail", _controller.Options.TrailEnabled, v => Update(o => o.TrailEnabled = v)));
+        body.Children.Add(Toggle("toggle_wave", "wave", _controller.Options.ShockwaveEnabled, v => Update(o => o.ShockwaveEnabled = v)));
+    }
 
-        Section(body, "CAT PLAYGROUND", "Autonomous laser modes never move the actual mouse.");
-        body.Children.Add(Choice("Play behavior", "mode", Enum.GetNames<PlayMode>(),
+    private void BuildCat(StackPanel body)
+    {
+        PageTitle(body, "head_cat", "desc_cat");
+        body.Children.Add(Label(UiText.T("label_mode"), Fore, 13, FontWeights.SemiBold, 0, 10));
+        body.Children.Add(OptionButtons("mode",
+            new[] { "mode_manual", "mode_ricochet", "mode_smartprey", "mode_mousehunt", "mode_hideseek", "mode_catchme" },
             (int)_controller.Options.Mode, i => _controller.SetMode((PlayMode)i)));
-        body.Children.Add(SliderRow("Movement speed", "speed", _controller.Options.Speed,
-            v => { _controller.Options.Speed = v; _controller.RefreshSettings(); }));
-        body.Children.Add(Text("HideSeek draws two virtual hiding blocks. CatchMe reacts to a mouse click or touch-generated click near the laser.", Muted, 11, FontWeights.Normal, 4, 4));
+        body.Children.Add(SliderRow("label_speed", "speed", _controller.Options.Speed, v => Update(o => o.Speed = v)));
+        body.Children.Add(Info(UiText.T("hint_cat")));
+    }
 
-        Section(body, "SESSION STUDIO", "Applies to automated modes. All sessions stop themselves.");
-        body.Children.Add(Choice("Active play duration", "session",
-            new[] { "30 seconds", "2 minutes", "5 minutes" },
+    private void BuildSession(StackPanel body)
+    {
+        PageTitle(body, "head_session", "desc_session");
+        body.Children.Add(Choice("label_session", "session", new[] { "seconds_30", "minutes_2", "minutes_5" },
             _controller.Options.SessionSeconds switch { 30 => 0, 300 => 2, _ => 1 },
-            i =>
-            {
-                _controller.Options.SessionSeconds = new[] { 30, 120, 300 }[i];
-                _controller.RefreshSettings();
-            }));
-        body.Children.Add(Choice("Pause every", "restEvery",
-            new[] { "20 seconds", "30 seconds", "60 seconds" },
+            i => Update(o => o.SessionSeconds = new[] { 30, 120, 300 }[i])));
+        body.Children.Add(Choice("label_rest_every", "restEvery",
+            new[] { "seconds_20", "seconds_30", "seconds_60" },
             _controller.Options.RestEverySeconds switch { 20 => 0, 60 => 2, _ => 1 },
-            i =>
-            {
-                _controller.Options.RestEverySeconds = new[] { 20, 30, 60 }[i];
-                _controller.RefreshSettings();
-            }));
-        body.Children.Add(Choice("Pause duration", "rest",
-            new[] { "None", "5 seconds", "8 seconds", "15 seconds" },
+            i => Update(o => o.RestEverySeconds = new[] { 20, 30, 60 }[i])));
+        body.Children.Add(Choice("label_rest_duration", "rest",
+            new[] { "none", "seconds_5", "seconds_8", "seconds_15" },
             _controller.Options.RestSeconds switch { 0 => 0, 5 => 1, 15 => 3, _ => 2 },
-            i =>
-            {
-                _controller.Options.RestSeconds = new[] { 0, 5, 8, 15 }[i];
-                _controller.RefreshSettings();
-            }));
-        body.Children.Add(Text("Session and pause changes apply to the active session. Switching behavior restarts the timer.", Muted, 11, FontWeights.Normal, 4, 0));
+            i => Update(o => o.RestSeconds = new[] { 0, 5, 8, 15 }[i])));
+        body.Children.Add(Info(UiText.T("session_hint")));
+    }
 
-        Section(body, "PERFORMANCE CENTER", "Adjust the frame budget for your computer.");
-        body.Children.Add(Choice("Performance profile", "profile", Enum.GetNames<PerformanceProfile>(),
+    private void BuildPerformance(StackPanel body)
+    {
+        PageTitle(body, "head_performance", "desc_performance");
+        body.Children.Add(Choice("label_performance", "profile",
+            new[] { "profile_eco", "profile_balanced", "profile_ultra" },
             (int)_controller.Options.Performance, i =>
             {
                 _controller.Options.Performance = (PerformanceProfile)i;
                 _controller.Options.CustomFps = null;
                 _controller.RefreshSettings();
             }));
-        body.Children.Add(Choice("FPS cap", "fps", new[] { "Automatic", "30", "60", "120", "144" },
+        body.Children.Add(Choice("label_fps", "fps",
+            new[] { "auto", "fps_30", "fps_60", "fps_120", "fps_144" },
             CurrentFpsSelection(), i =>
-            {
-                _controller.Options.CustomFps = i switch { 1 => 30, 2 => 60, 3 => 120, 4 => 144, _ => null };
-                _controller.RefreshSettings();
-            }));
-        body.Children.Add(Text("Eco = 30 FPS with fewer particles; Balanced = 60; Ultra = 120. Actual frame rate depends on Windows composition and your display.", Muted, 11, FontWeights.Normal, 5));
+                Update(o => o.CustomFps = i switch { 1 => 30, 2 => 60, 3 => 120, 4 => 144, _ => null })));
+        body.Children.Add(Info(UiText.T("perf_hint")));
+    }
 
-        Section(body, "MY PRESETS", "Save custom combinations locally. No account or cloud.");
+    private void BuildPresets(StackPanel body)
+    {
+        PageTitle(body, "head_presets", "desc_presets");
+        body.Children.Add(Label(UiText.T("label_preset_name"), Fore, 13, FontWeights.SemiBold, 0, 8));
         _presetName = new TextBox
         {
-            Text = "My Laser", MaxLength = 40, Height = 33,
-            Background = Panel, Foreground = Fore, BorderBrush = Hex("#515766"),
-            Padding = new Thickness(8, 5, 8, 5)
+            Text = UiText.T("preset_default"), MaxLength = 40, Height = 37,
+            Background = CardFill, Foreground = Fore, BorderBrush = BorderFill,
+            Padding = new Thickness(10, 7, 8, 6)
         };
         body.Children.Add(_presetName);
-        body.Children.Add(ActionButton("SAVE / UPDATE PRESET", SavePreset, false, 8));
-        _presetList = new ComboBox
-        {
-            Height = 33, Margin = new Thickness(0, 9, 0, 6),
-            Background = Panel, Foreground = Brushes.Black
-        };
+        var save = ActionButton(UiText.T("save_preset"), SavePreset, true);
+        save.Margin = new Thickness(0, 10, 0, 0);
+        body.Children.Add(save);
+        body.Children.Add(Label(UiText.T("label_saved"), Fore, 13, FontWeights.SemiBold, 22, 8));
+        _presetList = new ComboBox { Height = 36, Background = CardFill, Foreground = Brushes.Black };
         body.Children.Add(_presetList);
-        var actions = new Grid();
+        var actions = new Grid { Margin = new Thickness(0, 10, 0, 0) };
         actions.ColumnDefinitions.Add(new ColumnDefinition());
         actions.ColumnDefinitions.Add(new ColumnDefinition());
-        var load = ActionButton("LOAD PRESET", LoadPreset);
-        var delete = ActionButton("DELETE PRESET", DeletePreset);
-        load.Margin = new Thickness(0, 0, 5, 0);
-        delete.Margin = new Thickness(5, 0, 0, 0);
+        var load = ActionButton(UiText.T("load_preset"), LoadPreset);
+        var delete = ActionButton(UiText.T("delete_preset"), DeletePreset);
+        load.Margin = new Thickness(0, 0, 6, 0);
+        delete.Margin = new Thickness(6, 0, 0, 0);
         Grid.SetColumn(delete, 1);
-        actions.Children.Add(load); actions.Children.Add(delete);
+        actions.Children.Add(load);
+        actions.Children.Add(delete);
         body.Children.Add(actions);
-        _feedback = Text("", Muted, 11, FontWeights.Normal, 7);
+        _feedback = Label("", Muted, 12, FontWeights.Normal, 12);
         body.Children.Add(_feedback);
         RefreshPresetList();
+    }
 
-        Section(body, "QUICK CONTROL", "All combinations use Ctrl + Alt.");
-        body.Children.Add(Text("L  Toggle laser       E  Cycle effect       C  Cycle color", Fore, 12, FontWeights.Normal, 0, 5));
-        body.Children.Add(Text("M  Cycle game       ↑ / ↓  Increase / decrease speed", Fore, 12, FontWeights.Normal));
-        body.Children.Add(Text("Close this window to keep running in the tray. Use Exit to restore the original Windows cursor scheme.", Muted, 11, FontWeights.Normal, 13, 12));
-        body.Children.Add(ActionButton("EXIT CATLASER", _exit));
-        _controller.Changed += RefreshState;
-        RefreshState();
+    private void BuildHelp(StackPanel body)
+    {
+        PageTitle(body, "head_help", "desc_help");
+        var table = new StackPanel();
+        Hotkey(table, "Ctrl + Alt + L", "hotkey_toggle");
+        Hotkey(table, "Ctrl + Alt + E", "hotkey_effect");
+        Hotkey(table, "Ctrl + Alt + C", "hotkey_color");
+        Hotkey(table, "Ctrl + Alt + M", "hotkey_mode");
+        Hotkey(table, "Ctrl + Alt + ↑ / ↓", "hotkey_speed");
+        body.Children.Add(Card(table));
+        body.Children.Add(Label(UiText.T("safety_title"), Fore, 15, FontWeights.Bold, 22, 9));
+        body.Children.Add(Info(UiText.T("safety_info")));
+        var exitButton = ActionButton(UiText.T("exit"), _exit);
+        exitButton.Margin = new Thickness(0, 18, 0, 0);
+        body.Children.Add(exitButton);
+    }
+
+    private static void Hotkey(StackPanel panel, string combination, string key)
+    {
+        var row = new Grid { Margin = new Thickness(5, 8, 5, 8) };
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(159) });
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        row.Children.Add(Label(combination, Accent, 12, FontWeights.Bold));
+        var description = Label(UiText.T(key), Fore, 12, FontWeights.Normal);
+        Grid.SetColumn(description, 1);
+        row.Children.Add(description);
+        panel.Children.Add(row);
     }
 
     private void SavePreset()
     {
-        _feedback.Text = _presets.Save(_presetName.Text, _controller.Options)
-            ? "Preset saved to your local Windows profile." : "Use a name up to 40 characters (25 preset maximum).";
+        if (_presetName is null) return;
+        string result = _presets.Save(_presetName.Text, _controller.Options) ? "preset_saved" : "preset_invalid";
+        _feedback.Text = UiText.T(result);
         RefreshPresetList();
     }
 
     private void LoadPreset()
     {
-        var name = _presetList.SelectedItem as string;
+        var name = _presetList?.SelectedItem as string;
         var preset = _presets.Presets.FirstOrDefault(x => x.Name == name);
-        if (preset == null) { _feedback.Text = "Select a preset first."; return; }
+        if (preset is null)
+        {
+            _feedback.Text = UiText.T("preset_select");
+            return;
+        }
         _controller.ApplyPreset(preset.Options);
-        _feedback.Text = $"Loaded: {preset.Name}";
+        _feedback.Text = UiText.F("preset_loaded", preset.Name);
     }
 
     private void DeletePreset()
     {
-        if (_presetList.SelectedItem is not string name) return;
+        if (_presetList?.SelectedItem is not string name) return;
         _presets.Delete(name);
         RefreshPresetList();
-        _feedback.Text = $"Deleted: {name}";
+        _feedback.Text = UiText.F("preset_deleted", name);
     }
 
     private void RefreshPresetList()
     {
-        string? prior = _presetList.SelectedItem as string;
+        if (_presetList is null) return;
+        string? previous = _presetList.SelectedItem as string;
         _presetList.ItemsSource = _presets.Presets.Select(p => p.Name).ToArray();
-        _presetList.SelectedItem = _presets.Presets.Any(p => p.Name == prior)
-            ? prior : _presets.Presets.LastOrDefault()?.Name;
+        _presetList.SelectedItem = _presets.Presets.Any(p => p.Name == previous)
+            ? previous : _presets.Presets.LastOrDefault()?.Name;
+        if (_presets.Presets.Count == 0 && _feedback is not null)
+            _feedback.Text = UiText.T("empty_presets");
     }
 
-    private void RefreshState()
+    private static Border Info(string info)
     {
-        var o = _controller.Options;
-        _power.Content = _controller.Enabled ? "TURN LASER OFF" : "TURN LASER ON";
-        _power.Background = _controller.Enabled ? Accent : Hex("#526077");
-        _status.Text = !_controller.Enabled ? "Laser off · Windows cursor restored" :
-            o.Mode == PlayMode.Manual ?
-                (_controller.CursorApplied ? "Manual laser on · red cursor replaced" : "Laser on · cursor replacement unavailable") :
-                (_controller.IsResting ? "Cat game paused · rest break" : $"Cat game active · { _controller.SessionRemaining }s remaining");
-        _stats.Text = $"Performance: {_controller.ActualFps} FPS measured · cap {o.TargetFps} FPS · {o.Performance}";
-        _syncing = true;
-        try
+        return new Border
         {
-            ChoiceValue("style", (int)o.Style);
-            ChoiceValue("mode", (int)o.Mode);
-            ChoiceValue("color", o.ColorIndex);
-            ChoiceValue("profile", (int)o.Performance);
-            ChoiceValue("session", o.SessionSeconds switch { 30 => 0, 300 => 2, _ => 1 });
-            ChoiceValue("restEvery", o.RestEverySeconds switch { 20 => 0, 60 => 2, _ => 1 });
-            ChoiceValue("rest", o.RestSeconds switch { 0 => 0, 5 => 1, 15 => 3, _ => 2 });
-            ChoiceValue("fps", CurrentFpsSelection());
-            SliderValue("glow", o.Glow); SliderValue("size", o.Size);
-            SliderValue("trailLength", o.TrailLength); SliderValue("speed", o.Speed);
-            SliderValue("jitter", o.Jitter);
-            ToggleValue("trail", o.TrailEnabled);
-            ToggleValue("wave", o.ShockwaveEnabled);
+            Background = CardFill, CornerRadius = new CornerRadius(9),
+            BorderThickness = new Thickness(1), BorderBrush = BorderFill,
+            Margin = new Thickness(0, 19, 0, 0),
+            Padding = new Thickness(13),
+            Child = Label(info, Muted, 12, FontWeights.Normal)
+        };
+    }
+
+    private static Border Card(UIElement inner) => new()
+    {
+        Background = CardFill, BorderBrush = BorderFill,
+        BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10),
+        Padding = new Thickness(13), Child = inner
+    };
+
+    private UIElement OptionButtons(string group, string[] keys, int selected, Action<int> changed)
+    {
+        var wrap = new WrapPanel { Margin = new Thickness(0, 0, 0, 11) };
+        for (int i = 0; i < keys.Length; i++)
+        {
+            int index = i;
+            var button = ActionButton(UiText.T(keys[i]), () => changed(index));
+            button.Padding = new Thickness(13, 4, 13, 4);
+            button.MinWidth = 106;
+            button.Margin = new Thickness(0, 0, 8, 8);
+            button.Height = 36;
+            button.BorderThickness = new Thickness(1);
+            _options.Add((button, index, group));
+            wrap.Children.Add(button);
         }
-        finally { _syncing = false; }
+        RefreshButtons(group, selected);
+        return wrap;
     }
 
-    private int CurrentFpsSelection() => _controller.Options.CustomFps switch
-    { 30 => 1, 60 => 2, 120 => 3, 144 => 4, _ => 0 };
-    private void ChoiceValue(string key, int value)
+    private void RefreshButtons(string group, int selected)
     {
-        if (_choices.TryGetValue(key, out var control) && control.SelectedIndex != value)
-            control.SelectedIndex = value;
-    }
-    private void SliderValue(string key, double value)
-    {
-        if (_sliders.TryGetValue(key, out var control) && Math.Abs(control.Value - value) > .4)
-            control.Value = value;
-    }
-    private void ToggleValue(string key, bool value)
-    {
-        if (_toggles.TryGetValue(key, out var control) && control.IsChecked != value)
-            control.IsChecked = value;
+        foreach (var entry in _options.Where(x => x.Group == group))
+        {
+            bool active = entry.Index == selected;
+            entry.Button.Background = active ? Accent : CardFill;
+            entry.Button.Foreground = Fore;
+            entry.Button.BorderBrush = active ? Accent : BorderFill;
+        }
     }
 
-    private UIElement Choice(string label, string key, string[] values, int index, Action<int> changed)
+    private UIElement Choice(string labelKey, string key, string[] optionKeys, int selected, Action<int> changed)
     {
-        var block = new StackPanel { Margin = new Thickness(0, 9, 0, 0) };
-        block.Children.Add(Text(label, Muted, 12, FontWeights.SemiBold, 0, 4));
+        var stack = new StackPanel { Margin = new Thickness(0, 10, 0, 3) };
+        stack.Children.Add(Label(UiText.T(labelKey), Fore, 13, FontWeights.SemiBold, 0, 7));
         var combo = new ComboBox
         {
-            ItemsSource = values, SelectedIndex = index, Height = 34,
-            Background = Panel, Foreground = Brushes.Black
+            Height = 36,
+            ItemsSource = optionKeys.Select(FormatChoice).ToArray(),
+            SelectedIndex = selected,
+            Background = CardFill, Foreground = Brushes.Black
         };
         combo.SelectionChanged += (_, _) =>
         {
             if (!_syncing && combo.SelectedIndex >= 0) changed(combo.SelectedIndex);
         };
         _choices[key] = combo;
-        block.Children.Add(combo);
-        return block;
+        stack.Children.Add(combo);
+        return stack;
     }
 
-    private UIElement Toggle(string label, string key, bool value, Action<bool> changed)
+    private static string FormatChoice(string key) => key switch
     {
-        var toggle = new CheckBox
+        "seconds_5" => UiText.F("seconds", 5),
+        "seconds_8" => UiText.F("seconds", 8),
+        "seconds_15" => UiText.F("seconds", 15),
+        "seconds_20" => UiText.F("seconds", 20),
+        "seconds_30" => UiText.F("seconds", 30),
+        "seconds_60" => UiText.F("seconds", 60),
+        "minutes_2" => UiText.F("minutes", 2),
+        "minutes_5" => UiText.T("minutes_five"),
+        "fps_30" => "30 FPS",
+        "fps_60" => "60 FPS",
+        "fps_120" => "120 FPS",
+        "fps_144" => "144 FPS",
+        _ => UiText.T(key)
+    };
+
+    private UIElement SliderGrid(params UIElement[] controls)
+    {
+        var grid = new Grid { Margin = new Thickness(0, 4, 0, 0) };
+        grid.ColumnDefinitions.Add(new ColumnDefinition());
+        grid.ColumnDefinitions.Add(new ColumnDefinition());
+        for (int i = 0; i < controls.Length; i++)
         {
-            Content = label, IsChecked = value, Foreground = Fore,
-            FontSize = 13, Margin = new Thickness(0, 12, 0, 0)
-        };
-        toggle.Checked += (_, _) => { if (!_syncing) changed(true); };
-        toggle.Unchecked += (_, _) => { if (!_syncing) changed(false); };
-        _toggles[key] = toggle;
-        return toggle;
+            if (i % 2 == 0) grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            Grid.SetColumn(controls[i], i % 2);
+            Grid.SetRow(controls[i], i / 2);
+            if (controls[i] is FrameworkElement fe)
+                fe.Margin = i % 2 == 0
+                    ? new Thickness(0, 9, 11, 7) : new Thickness(11, 9, 0, 7);
+            grid.Children.Add(controls[i]);
+        }
+        return grid;
     }
 
-    private UIElement SliderRow(string label, string key, double value, Action<double> changed)
+    private UIElement SliderRow(string labelKey, string key, double value, Action<double> changed)
     {
-        var block = new StackPanel { Margin = new Thickness(0, 12, 0, 0) };
+        var stack = new StackPanel { Margin = new Thickness(0, 15, 0, 4) };
         var row = new DockPanel();
-        var percent = Text($"{value:0}%", Muted, 12, FontWeights.Normal);
-        DockPanel.SetDock(percent, Dock.Right);
-        row.Children.Add(percent);
-        row.Children.Add(Text(label, Fore, 12, FontWeights.SemiBold));
-        block.Children.Add(row);
-        var slider = new Slider { Minimum = 0, Maximum = 100, Value = value, Margin = new Thickness(0, 3, 0, 0) };
+        var number = Label($"{value:0}%", Muted, 12, FontWeights.Normal);
+        DockPanel.SetDock(number, Dock.Right);
+        row.Children.Add(number);
+        row.Children.Add(Label(UiText.T(labelKey), Fore, 12, FontWeights.SemiBold));
+        stack.Children.Add(row);
+        var slider = new Slider
+        {
+            Minimum = 0, Maximum = 100, Value = value,
+            TickFrequency = 5, Margin = new Thickness(0, 7, 0, 0)
+        };
         slider.ValueChanged += (_, _) =>
         {
-            percent.Text = $"{slider.Value:0}%";
+            number.Text = $"{slider.Value:0}%";
             if (!_syncing) changed(slider.Value);
         };
         _sliders[key] = slider;
-        block.Children.Add(slider);
-        return block;
+        stack.Children.Add(slider);
+        return stack;
     }
 
-    private static void Section(StackPanel stack, string title, string subtitle)
+    private UIElement Toggle(string textKey, string key, bool selected, Action<bool> changed)
     {
-        var separator = new Border
+        var checkbox = new CheckBox
         {
-            Height = 1, Background = Hex("#394052"),
-            Margin = new Thickness(0, 25, 0, 12)
+            Content = UiText.T(textKey), IsChecked = selected,
+            Foreground = Fore, FontSize = 12,
+            Margin = new Thickness(0, 11, 0, 0)
         };
-        stack.Children.Add(separator);
-        stack.Children.Add(Text(title, Accent, 12, FontWeights.Bold, 0, 4));
-        stack.Children.Add(Text(subtitle, Muted, 12, FontWeights.Normal));
+        checkbox.Checked += (_, _) => { if (!_syncing) changed(true); };
+        checkbox.Unchecked += (_, _) => { if (!_syncing) changed(false); };
+        _toggles[key] = checkbox;
+        return checkbox;
     }
 
-    private static Button ActionButton(string label, Action action, bool primary = false, double top = 0)
+    private void Update(Action<LaserOptions> change)
+    {
+        change(_controller.Options);
+        _controller.RefreshSettings();
+    }
+
+    private void RefreshState()
+    {
+        var o = _controller.Options;
+        if (_power is null || _status is null || _stats is null) return;
+        _power.Content = UiText.T(_controller.Enabled ? "turn_off" : "turn_on");
+        _power.Background = _controller.Enabled ? Accent : Inactive;
+        _status.Text = !_controller.Enabled ? UiText.T("status_off") :
+            o.Mode == PlayMode.Manual
+                ? UiText.T(_controller.CursorApplied ? "status_manual" : "status_no_cursor")
+                : _controller.IsResting
+                    ? UiText.T("status_rest")
+                    : UiText.F("status_session", _controller.SessionRemaining);
+        _stats.Text = UiText.F("fps_measure", _controller.ActualFps, o.TargetFps);
+
+        _syncing = true;
+        try
+        {
+            RefreshButtons("style", (int)o.Style);
+            RefreshButtons("mode", (int)o.Mode);
+            ChoiceValue("color", o.ColorIndex);
+            ChoiceValue("session", o.SessionSeconds switch { 30 => 0, 300 => 2, _ => 1 });
+            ChoiceValue("restEvery", o.RestEverySeconds switch { 20 => 0, 60 => 2, _ => 1 });
+            ChoiceValue("rest", o.RestSeconds switch { 0 => 0, 5 => 1, 15 => 3, _ => 2 });
+            ChoiceValue("profile", (int)o.Performance);
+            ChoiceValue("fps", o.CustomFps switch { 30 => 1, 60 => 2, 120 => 3, 144 => 4, _ => 0 });
+            SliderValue("glow", o.Glow);
+            SliderValue("size", o.Size);
+            SliderValue("trailLength", o.TrailLength);
+            SliderValue("jitter", o.Jitter);
+            SliderValue("speed", o.Speed);
+            ToggleValue("trail", o.TrailEnabled);
+            ToggleValue("wave", o.ShockwaveEnabled);
+            if (_previewGlow is not null)
+                _previewGlow.Fill = Halo(o.PrimaryColor);
+            if (_previewCore is not null)
+                _previewCore.Fill = Brushes.White;
+        }
+        finally { _syncing = false; }
+    }
+
+    private void ChoiceValue(string key, int index)
+    {
+        if (_choices.TryGetValue(key, out var choice) && choice.SelectedIndex != index)
+            choice.SelectedIndex = index;
+    }
+
+    private void SliderValue(string key, double value)
+    {
+        if (_sliders.TryGetValue(key, out var slider) && Math.Abs(slider.Value - value) > .4)
+            slider.Value = value;
+    }
+
+    private void ToggleValue(string key, bool value)
+    {
+        if (_toggles.TryGetValue(key, out var toggle) && toggle.IsChecked != value)
+            toggle.IsChecked = value;
+    }
+
+    private static Brush Halo(Color color) => new RadialGradientBrush(
+        Color.FromArgb(210, color.R, color.G, color.B),
+        Color.FromArgb(0, color.R, color.G, color.B));
+
+    private static Button ActionButton(string label, Action action, bool important = false)
     {
         var button = new Button
         {
-            Content = label, Height = 38, Margin = new Thickness(0, top, 0, 0),
-            Background = primary ? Accent : Panel, Foreground = Fore,
-            BorderThickness = new Thickness(0),
-            FontSize = 12, FontWeight = FontWeights.Bold,
+            Content = label, Background = important ? Accent : CardFill,
+            Foreground = Fore, BorderBrush = BorderFill, BorderThickness = new Thickness(1),
+            FontWeight = FontWeights.SemiBold, FontSize = 12, Height = 38,
             Cursor = System.Windows.Input.Cursors.Hand
         };
         button.Click += (_, _) => action();
         return button;
     }
 
-    private static TextBlock Text(string content, Brush color, double size, FontWeight weight,
-        double top = 0, double bottom = 0) =>
-        new()
-        {
-            Text = content, TextWrapping = TextWrapping.Wrap,
-            Foreground = color, FontSize = size, FontWeight = weight,
-            Margin = new Thickness(0, top, 0, bottom)
-        };
+    private static TextBlock Label(string content, Brush color, double size, FontWeight weight,
+        double marginTop = 0, double marginBottom = 0) => new()
+    {
+        Text = content, TextWrapping = TextWrapping.Wrap,
+        Foreground = color, FontSize = size, FontWeight = weight,
+        Margin = new Thickness(0, marginTop, 0, marginBottom)
+    };
 
-    private static Brush Hex(string color) =>
-        (Brush)new BrushConverter().ConvertFromString(color)!;
+    private static Brush Solid(string hex) => (Brush)new BrushConverter().ConvertFromString(hex)!;
 }
