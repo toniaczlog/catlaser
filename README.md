@@ -1,4 +1,4 @@
-# CatLaser 0.2.1 · Laser Playground 🔴
+# CatLaser 0.3.0 · Laser Playground 🔴
 
 **Turn your mouse into a desktop laser.** Free, local, open-source Windows 10/11 software, built with .NET 10 + WPF + Win32. No accounts, ads or API keys.
 
@@ -6,9 +6,9 @@
 
 ## Download
 
-**[CatLaser v0.2.1 — Windows x64 ZIP](https://github.com/toniaczlog/catlaser/releases/tag/v0.2.1)**
+**[CatLaser v0.3.0 — Windows x64 ZIP](https://github.com/toniaczlog/catlaser/releases/tag/v0.3.0)**
 
-Download `CatLaser-0.2.1-win-x64.zip`, extract the archive and start `CatLaser.exe`. Self-contained portable application; no separate .NET installation is required. The executable is not code-signed; Windows SmartScreen may warn. The release is marked **prerelease** until an interactive Windows test is performed.
+Download `CatLaser-0.3-win-x64.zip`, extract the archive and start `CatLaser.exe`. Self-contained portable application; no separate .NET installation is required. The executable is not code-signed; Windows SmartScreen may warn. The release is marked **prerelease** until an interactive Windows test is performed.
 
 ## Język polski / English
 
@@ -97,3 +97,23 @@ Subsequent edits to `docs/` publish from the same repository automatically. The 
 
 To validate a site edit: `node --check docs/main.js && node scripts/check-site.mjs`.
 The language selector defaults to the visitor's preferred browser language (PL or EN), and persists the selected language in browser localStorage.
+
+## CatLaser 0.3.0 features
+
+- Select the game monitor and a percentage-based safe play rectangle (left/top/width/height); movement is clamped to it.
+- Playlists: compose up to 20 steps, each 10/20/30/60 seconds. A rest step turns off the virtual dot without moving the physical pointer. Up to 15 named sequences saved locally.
+- New Spiral, FigureEight and Orbit motions (with adjustable orbit radius).
+- HaloPulse, TwinSpot, LightTunnel and SoftStar light effects; slow alpha transitions, avoiding strobing.
+- Pause overlay and restore native cursor when a borderless fullscreen foreground application is detected; resume afterwards. Maximized normal windows are excluded.
+- Configurable global shortcuts (six actions). Combo editor validates duplicates and rolls back registrations on OS conflict; bindings are persisted locally.
+- Tray submenus: colors, games, presets, playlists and speed +/-10%; localized PL and EN.
+
+**Manual Windows GUI verification is still required** for fullscreen detection, per-monitor DPI and global hotkeys. Source is built and tested on GitHub Actions.
+
+## Website refresh
+
+Landing hosted by GitHub Pages at [CatLaser](https://toniaczlog.github.io/catlaser/), with indexable [/pl/](https://toniaczlog.github.io/catlaser/pl/) and [/en/](https://toniaczlog.github.io/catlaser/en/) routes, an eight-effect browser demo, color/glow/trail controls, four motion previews, mobile sticky download, privacy, release notes and an [SVG press kit](docs/press/).
+
+**App screenshots:** the website has an explicitly marked pending section; real screenshots were not supplied. Add verified Windows 0.3 captures to `docs/screenshots/` and replace that placeholder. Do not pass off generated mockups as real captures.
+
+To avoid unnecessary builds: docs changes trigger the small site-check workflow but not the EXE build. A joint 0.3 code update triggers one Windows Release CI and one Pages deploy.

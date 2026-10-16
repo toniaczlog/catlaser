@@ -14,6 +14,7 @@ using Button = System.Windows.Controls.Button;
 using ComboBox = System.Windows.Controls.ComboBox;
 using CheckBox = System.Windows.Controls.CheckBox;
 using TextBox = System.Windows.Controls.TextBox;
+using Forms = System.Windows.Forms;
 
 namespace CatLaser;
 
@@ -34,6 +35,8 @@ internal sealed class SettingsWindow : Window
 
     private readonly LaserController _controller;
     private readonly Action _exit;
+    private readonly HotkeyWindow _hotkeys;
+    private readonly PlaylistStore _playlists = new();
     private readonly PresetStore _presets = new();
     private readonly Dictionary<string, Slider> _sliders = new();
     private readonly Dictionary<string, ComboBox> _choices = new();
@@ -53,10 +56,11 @@ internal sealed class SettingsWindow : Window
     private bool _syncing;
     private int _page;
 
-    public SettingsWindow(LaserController controller, Action exit)
+    public SettingsWindow(LaserController controller, Action exit, HotkeyWindow hotkeys)
     {
         _controller = controller;
         _exit = exit;
+        _hotkeys = hotkeys;
         Width = 875;
         Height = 710;
         MinWidth = 695;
@@ -270,7 +274,8 @@ internal sealed class SettingsWindow : Window
         body.Children.Add(OptionButtons("style", new[]
         {
             "style_real", "style_neon", "style_cyber", "style_photoreal",
-            "style_comet", "style_electric", "style_prism", "style_plasma"
+            "style_comet", "style_electric", "style_prism", "style_plasma",
+            "style_halopulse", "style_twinspot", "style_lighttunnel", "style_softstar"
         }, (int)_controller.Options.Style, i => _controller.ChangeStyle((LaserStyle)i)));
         body.Children.Add(Choice("label_color", "color",
             new[] { "color_red", "color_green", "color_blue", "color_violet", "color_amber", "color_cyan" },
@@ -289,9 +294,30 @@ internal sealed class SettingsWindow : Window
         PageTitle(body, "head_cat", "desc_cat");
         body.Children.Add(Label(UiText.T("label_mode"), Fore, 13, FontWeights.SemiBold, 0, 10));
         body.Children.Add(OptionButtons("mode",
-            new[] { "mode_manual", "mode_ricochet", "mode_smartprey", "mode_mousehunt", "mode_hideseek", "mode_catchme" },
+            new[] { "mode_manual", "mode_ricochet", "mode_smartprey", "mode_mousehunt", "mode_hideseek", "mode_catchme",
+                "mode_spiral", "mode_figureeight", "mode_orbit" },
             (int)_controller.Options.Mode, i => _controller.SetMode((PlayMode)i)));
         body.Children.Add(SliderRow("label_speed", "speed", _controller.Options.Speed, v => Update(o => o.Speed = v)));
+        body.Children.Add(SliderRow("label_orbit", "orbit", _controller.Options.OrbitRadius, v => Update(o => o.OrbitRadius = v)));
+        body.Children.Add(Label(UiText.T("label_monitor"), Fore, 13, FontWeights.SemiBold, 16, 8));
+        var screens=Forms.Screen.AllScreens;
+        var monitor=new ComboBox {Height=36,Background=CardFill,Foreground=Brushes.Black};
+        monitor.Items.Add(UiText.T("monitor_follow"));
+        foreach(var screen in screens)monitor.Items.Add(screen.DeviceName);
+        int screenIndex=Array.FindIndex(screens,s=>s.DeviceName==_controller.Options.MonitorDeviceName);
+        monitor.SelectedIndex=screenIndex+1;
+        monitor.SelectionChanged+=(_,_)=>{
+            if(monitor.SelectedIndex<0)return;
+            _controller.SetMonitor(monitor.SelectedIndex==0?"":screens[monitor.SelectedIndex-1].DeviceName);
+        };
+        body.Children.Add(monitor);
+        body.Children.Add(Label(UiText.T("label_area"),Fore,13,FontWeights.SemiBold,18,4));
+        body.Children.Add(SliderGrid(
+            SliderRow("area_x","areaX",_controller.Options.AreaLeft,v=>{Update(o=>o.AreaLeft=v);_controller.ResetPlayArea();}),
+            SliderRow("area_y","areaY",_controller.Options.AreaTop,v=>{Update(o=>o.AreaTop=v);_controller.ResetPlayArea();}),
+            SliderRow("area_width","areaW",_controller.Options.AreaWidth,v=>{Update(o=>o.AreaWidth=v);_controller.ResetPlayArea();}),
+            SliderRow("area_height","areaH",_controller.Options.AreaHeight,v=>{Update(o=>o.AreaHeight=v);_controller.ResetPlayArea();})
+        ));
         body.Children.Add(Info(UiText.T("hint_cat")));
     }
 
@@ -310,6 +336,52 @@ internal sealed class SettingsWindow : Window
             _controller.Options.RestSeconds switch { 0 => 0, 5 => 1, 15 => 3, _ => 2 },
             i => Update(o => o.RestSeconds = new[] { 0, 5, 8, 15 }[i])));
         body.Children.Add(Info(UiText.T("session_hint")));
+        body.Children.Add(Label(UiText.T("playlist_title"),Fore,16,FontWeights.Bold,26,9));
+        body.Children.Add(Label(UiText.T("playlist_desc"),Muted,12,FontWeights.Normal,0,12));
+        var draft=new List<PlayStep>();
+        var mode=new ComboBox {Height=35,Background=CardFill,Foreground=Brushes.Black,
+            ItemsSource=new[]{"mode_smartprey","mode_mousehunt","mode_ricochet",
+                "mode_spiral","mode_figureeight","mode_orbit","playlist_rest"}
+                .Select(UiText.T).ToArray(),SelectedIndex=0};
+        var minutes=new ComboBox {Height=35,Background=CardFill,Foreground=Brushes.Black,
+            ItemsSource=new[]{"10 s","20 s","30 s","60 s"},SelectedIndex=1};
+        body.Children.Add(Label(UiText.T("playlist_step"),Fore,12,FontWeights.SemiBold,0,5));
+        body.Children.Add(mode);
+        body.Children.Add(minutes);
+        var draftList=Label("",Muted,12,FontWeights.Normal,9,7);
+        body.Children.Add(draftList);
+        void ShowDraft()=>draftList.Text=draft.Count==0?UiText.T("playlist_empty"):
+            string.Join(" → ",draft.Select((s,i)=>
+                (s.Mode==PlayMode.Manual?UiText.T("playlist_rest"):UiText.T("mode_"+s.Mode.ToString().ToLowerInvariant()))
+                +" "+s.Seconds+"s"));
+        ShowDraft();
+        body.Children.Add(ActionButton(UiText.T("playlist_add"),()=>{
+            PlayMode[] values={PlayMode.SmartPrey,PlayMode.MouseHunt,PlayMode.Ricochet,
+                PlayMode.Spiral,PlayMode.FigureEight,PlayMode.Orbit,PlayMode.Manual};
+            int[] durations={10,20,30,60};
+            if(draft.Count<20)draft.Add(new PlayStep {Mode=values[Math.Max(0,mode.SelectedIndex)],
+                Seconds=durations[Math.Max(0,minutes.SelectedIndex)]});
+            ShowDraft();
+        }));
+        body.Children.Add(ActionButton(UiText.T("playlist_clear"),()=>{draft.Clear();ShowDraft();}));
+        var name=new TextBox {Text=UiText.T("playlist_default"),MaxLength=40,Height=36,
+            Background=CardFill,Foreground=Fore,BorderBrush=BorderFill,
+            Padding=new Thickness(10,6,8,6),Margin=new Thickness(0,10,0,5)};
+        body.Children.Add(name);
+        var feedback=Label("",Muted,12,FontWeights.Normal,8,8);
+        body.Children.Add(ActionButton(UiText.T("playlist_save"),()=>{
+            bool saved=_playlists.Save(new PlaySequence {Name=name.Text.Trim(),Steps=draft.ToList()});
+            feedback.Text=UiText.T(saved?"playlist_saved":"playlist_error");
+        }));
+        body.Children.Add(feedback);
+        var savedList=new ComboBox {Height=36,Background=CardFill,Foreground=Brushes.Black,
+            ItemsSource=_playlists.Playlists.Select(p=>p.Name).ToArray(),SelectedIndex=0};
+        body.Children.Add(savedList);
+        body.Children.Add(ActionButton(UiText.T("playlist_start"),()=>{
+            var selected=_playlists.Playlists.FirstOrDefault(p=>p.Name==(savedList.SelectedItem as string));
+            if(selected!=null)_controller.StartPlaylist(selected);
+        },true));
+        body.Children.Add(ActionButton(UiText.T("stop_playlist"),()=>_controller.StopPlaylist()));
     }
 
     private void BuildPerformance(StackPanel body)
@@ -327,6 +399,8 @@ internal sealed class SettingsWindow : Window
             new[] { "auto", "fps_30", "fps_60", "fps_120", "fps_144" },
             CurrentFpsSelection(), i =>
                 Update(o => o.CustomFps = i switch { 1 => 30, 2 => 60, 3 => 120, 4 => 144, _ => null })));
+        body.Children.Add(Toggle("pause_fullscreen","fullscreen",_controller.Options.PauseOnFullscreen,
+            v=>Update(o=>o.PauseOnFullscreen=v)));
         body.Children.Add(Info(UiText.T("perf_hint")));
     }
 
@@ -365,18 +439,53 @@ internal sealed class SettingsWindow : Window
 
     private void BuildHelp(StackPanel body)
     {
-        PageTitle(body, "head_help", "desc_help");
-        var table = new StackPanel();
-        Hotkey(table, "Ctrl + Alt + L", "hotkey_toggle");
-        Hotkey(table, "Ctrl + Alt + E", "hotkey_effect");
-        Hotkey(table, "Ctrl + Alt + C", "hotkey_color");
-        Hotkey(table, "Ctrl + Alt + M", "hotkey_mode");
-        Hotkey(table, "Ctrl + Alt + ↑ / ↓", "hotkey_speed");
-        body.Children.Add(Card(table));
-        body.Children.Add(Label(UiText.T("safety_title"), Fore, 15, FontWeights.Bold, 22, 9));
+        PageTitle(body,"head_help","desc_help");
+        body.Children.Add(Label(UiText.T("hotkey_edit"),Fore,15,FontWeights.Bold,0,9));
+        var current=HotkeyConfig.Defaults().ToDictionary(b=>b.Id);
+        foreach(var active in _hotkeys.Current)
+            current[active.Id]=new HotkeyBinding{Id=active.Id,Modifiers=active.Modifiers,VirtualKey=active.VirtualKey};
+        var editor=new StackPanel();
+        string[] translations={"hotkey_toggle","hotkey_effect","hotkey_color",
+            "hotkey_faster","hotkey_slower","hotkey_mode"};
+        for(int id=1;id<=6;id++)
+        {
+            int actionId=id;
+            var row=new Grid{Margin=new Thickness(0,0,0,11)};
+            row.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(1,GridUnitType.Star)});
+            row.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(125)});
+            row.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(98)});
+            row.Children.Add(Label(UiText.T(translations[id-1]),Fore,12,FontWeights.SemiBold));
+            var modifiers=new ComboBox{Height=33,Background=CardFill,Foreground=Brushes.Black,
+                ItemsSource=HotkeyConfig.Modifiers.Select(v=>v.Label).ToArray(),
+                SelectedIndex=Array.FindIndex(HotkeyConfig.Modifiers,v=>v.Value==current[id].Modifiers)};
+            modifiers.SelectionChanged+=(_,_)=>{
+                if(modifiers.SelectedIndex>=0)
+                    current[actionId].Modifiers=HotkeyConfig.Modifiers[modifiers.SelectedIndex].Value;
+            };
+            Grid.SetColumn(modifiers,1);row.Children.Add(modifiers);
+            var keys=new ComboBox{Height=33,Background=CardFill,Foreground=Brushes.Black,
+                ItemsSource=HotkeyConfig.Keys.Select(v=>v.Label).ToArray(),
+                SelectedIndex=Array.FindIndex(HotkeyConfig.Keys,v=>v.Value==current[id].VirtualKey)};
+            keys.SelectionChanged+=(_,_)=>{
+                if(keys.SelectedIndex>=0)
+                    current[actionId].VirtualKey=HotkeyConfig.Keys[keys.SelectedIndex].Value;
+            };
+            Grid.SetColumn(keys,2);row.Children.Add(keys);
+            editor.Children.Add(row);
+        }
+        body.Children.Add(editor);
+        var result=Label("",Muted,12,FontWeights.Normal,10,10);
+        body.Children.Add(ActionButton(UiText.T("hotkey_apply"),()=>{
+            var bindings=current.Values.OrderBy(b=>b.Id).ToArray();
+            if(!HotkeyConfig.Valid(bindings)){result.Text=UiText.T("hotkey_duplicate");return;}
+            if(!_hotkeys.Rebind(bindings)){result.Text=UiText.T("hotkey_conflict");return;}
+            result.Text=UiText.T(HotkeyConfig.Save(bindings)?"hotkey_saved":"hotkey_not_saved");
+        },true));
+        body.Children.Add(result);
+        body.Children.Add(Label(UiText.T("safety_title"),Fore,15,FontWeights.Bold,22,9));
         body.Children.Add(Info(UiText.T("safety_info")));
-        var exitButton = ActionButton(UiText.T("exit"), _exit);
-        exitButton.Margin = new Thickness(0, 18, 0, 0);
+        var exitButton=ActionButton(UiText.T("exit"),_exit);
+        exitButton.Margin=new Thickness(0,18,0,0);
         body.Children.Add(exitButton);
     }
 
@@ -610,8 +719,12 @@ internal sealed class SettingsWindow : Window
             SliderValue("trailLength", o.TrailLength);
             SliderValue("jitter", o.Jitter);
             SliderValue("speed", o.Speed);
+            SliderValue("orbit", o.OrbitRadius);
+            SliderValue("areaX",o.AreaLeft);SliderValue("areaY",o.AreaTop);
+            SliderValue("areaW",o.AreaWidth);SliderValue("areaH",o.AreaHeight);
             ToggleValue("trail", o.TrailEnabled);
             ToggleValue("wave", o.ShockwaveEnabled);
+            ToggleValue("fullscreen",o.PauseOnFullscreen);
             if (_previewGlow is not null)
                 _previewGlow.Fill = Halo(o.PrimaryColor);
             if (_previewCore is not null)

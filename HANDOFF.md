@@ -44,3 +44,20 @@
 - Replaced it with two standalone jade eyes whose pupils track laser position using the existing animation frame; no extra timers or image downloads.
 - Eyes brighten on pointer/keyboard interaction, softly idle after inactivity, and occasionally blink. Reduced-motion users get stationary, responsive eyes.
 - Real / Comet / Electric buttons, PL/EN, direct download and non-demo page areas remain unchanged.
+
+## v0.3.0 development handoff
+
+Windows:
+- `LaserOptions` includes selected monitor, percentage play area, orbit radius and fullscreen-pausing toggle.
+- `MotionEngine.GetPlayArea` uses selected screen + physical pixel rectangle; Spiral, FigureEight and Orbit are new modes.
+- `PlaylistStore` persists up to 15 sequences with 20 bounded steps; manual step in playlist is a blank rest.
+- `LaserController` owns playlist advancement and fullscreen suspension. Do not move the OS pointer.
+- `FullscreenGuard` ignores maximized captioned windows; foreground borderless fullscreen detection is best-effort (must smoke-test mixed DPI & games).
+- `HotkeyConfig` persists six customizable key combinations; `HotkeyWindow.Rebind` rollback on conflicts. `SettingsWindow` editor and `Program` tray quick menus use it.
+- `LaserOverlay` draws four subtle additional light illusions.
+
+Website:
+- `docs/index.html`, `docs/main.js`, `docs/styles.css` include eight-effect tuner, four movement preview canvases, sticky mobile download, privacy/download/release/press sections. `docs/pl/` and `docs/en/` are static SEO routes, `docs/sitemap.xml` + robots.
+- `docs/press/` holds mark, wordmark, 9:16 and 16:9 SVG assets. No external CDN.
+- L1 screenshot section is **pending** real app Windows captures; no invented screenshots. This is the one uncompleted acceptance criterion.
+- Tests: `tests/ConfigSmoke`, `tests/LocalizationSmoke` in Windows workflow; `scripts/check-site.mjs` for website.

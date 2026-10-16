@@ -5,10 +5,16 @@ const read = file => readFileSync(new URL('../docs/' + file, import.meta.url), '
 const html = read('index.html');
 const css = read('styles.css');
 const js = read('main.js');
+const pl = read('pl/index.html');
+const en = read('en/index.html');
 assert.match(html, /<html lang="pl">/, 'Polish fallback');
 assert.match(html, /data-lang="en"/, 'English selector');
+assert.match(pl, /<html lang="pl">/, 'Polish SEO route');
+assert.match(en, /<html lang="en">/, 'English SEO route');
+assert.match(pl, /rel="canonical"/, 'Polish canonical');
+assert.match(en, /rel="canonical"/, 'English canonical');
 assert.match(html, /name="viewport"/, 'Responsive viewport');
-assert.match(html, /CatLaser-0\.2\.1-win-x64\.zip/, 'Download URL');
+assert.match(html, /CatLaser-0\.3-win-x64\.zip/, 'Download URL');
 assert.match(css, /prefers-reduced-motion/, 'Reduced motion support');
 assert.match(html, /id="watcher"/, 'Eye tracker is present');
 assert.match(html, /class="watch-eyes"/, 'Minimalist pair of eyes is present');
@@ -28,5 +34,17 @@ const used = [...html.matchAll(/data-i18n(?:-html)?="([^"]+)"/g)].map(x => x[1])
 for (const key of used) assert.ok(Object.hasOwn(dictionary, key), 'Missing translation: ' + key);
 for (const key of [...html.matchAll(/href="#([^"]+)"/g)].map(x => x[1]))
   assert.ok(html.includes('id="' + key + '"'), 'Missing anchor: ' + key);
-for (const file of ['styles.css','main.js','favicon.svg']) read(file);
+assert.match(html,/data-motion="ricochet"/,'Preview of Ricochet');
+assert.match(html,/id="demo-glow"/,'Glow slider');
+assert.match(html,/id="demo-trail"/,'Trail slider');
+assert.match(html,/id="demo-color"/,'Color selector');
+assert.match(js,/renderPreviews/,'Mode preview renderer');
+assert.match(html,/class="mobile-download"/,'Sticky download');
+assert.match(html,/id="privacy"/,'Privacy panel');
+assert.match(html,/id="updates"/,'Changelog');
+assert.match(html,/id="press"/,'Press kit');
+assert.match(html,/screensPending/,'Real screenshots explicitly pending');
+for (const file of ['styles.css','main.js','favicon.svg','robots.txt','sitemap.xml',
+    'press/mark.svg','press/wordmark.svg','press/shorts-card.svg','press/social-banner.svg'])
+    read(file);
 console.log('Site OK. ' + Object.keys(dictionary).length + ' English keys, ' + used.length + ' translated nodes.');

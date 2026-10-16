@@ -7,8 +7,8 @@ using System.Windows.Media;
 
 namespace CatLaser;
 
-public enum LaserStyle { Real, Neon, Cyber, Photoreal, Comet, Electric, Prism, Plasma }
-public enum PlayMode { Manual, Ricochet, SmartPrey, MouseHunt, HideSeek, CatchMe }
+public enum LaserStyle { Real, Neon, Cyber, Photoreal, Comet, Electric, Prism, Plasma, HaloPulse, TwinSpot, LightTunnel, SoftStar }
+public enum PlayMode { Manual, Ricochet, SmartPrey, MouseHunt, HideSeek, CatchMe, Spiral, FigureEight, Orbit }
 public enum PerformanceProfile { Eco, Balanced, Ultra }
 
 public sealed class LaserOptions
@@ -28,6 +28,13 @@ public sealed class LaserOptions
     public int RestEverySeconds { get; set; } = 30;
     public int RestSeconds { get; set; } = 8;
     public int? CustomFps { get; set; }
+    public string MonitorDeviceName { get; set; } = "";
+    public double AreaLeft { get; set; } = 5;
+    public double AreaTop { get; set; } = 5;
+    public double AreaWidth { get; set; } = 90;
+    public double AreaHeight { get; set; } = 90;
+    public bool PauseOnFullscreen { get; set; } = true;
+    public double OrbitRadius { get; set; } = 30;
 
     public int TargetFps => Math.Clamp(CustomFps ?? (Performance switch
     {
@@ -57,6 +64,12 @@ public sealed class LaserOptions
         TrailLength = Safe(TrailLength, 45); Speed = Safe(Speed, 50);
         Jitter = Safe(Jitter, 0);
         ColorIndex = Math.Clamp(ColorIndex, 0, 5);
+        MonitorDeviceName ??= "";
+        if (MonitorDeviceName.Length > 80) MonitorDeviceName = "";
+        AreaLeft = Safe(AreaLeft,5); AreaTop = Safe(AreaTop,5);
+        AreaWidth = Math.Clamp(double.IsFinite(AreaWidth)?AreaWidth:90, 5, Math.Max(5,100-AreaLeft));
+        AreaHeight = Math.Clamp(double.IsFinite(AreaHeight)?AreaHeight:90, 5, Math.Max(5,100-AreaTop));
+        OrbitRadius = Safe(OrbitRadius,30);
         SessionSeconds = SessionSeconds is 30 or 120 or 300 ? SessionSeconds : 120;
         RestEverySeconds = Math.Clamp(RestEverySeconds, 10, 120);
         RestSeconds = Math.Clamp(RestSeconds, 0, 40);

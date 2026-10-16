@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="CatLaser laser dot mark">
+<defs><radialGradient id="beam"><stop stop-color="#fff" offset="0"/><stop stop-color="#ff405a" offset=".18"/><stop stop-color="#ff405a" stop-opacity=".22" offset=".62"/><stop stop-color="#ff405a" stop-opacity="0" offset="1"/></radialGradient></defs>
+<rect width="256" height="256" rx="56" fill="#17212e"/>
+<circle cx="128" cy="128" r="96" fill="none" stroke="#586a78" stroke-opacity=".40" stroke-width="3"/>
+<circle cx="128" cy="128" r="67" fill="none" stroke="#fc4a60" stroke-opacity=".55" stroke-width="3"/>
+<circle cx="128" cy="128" r="55" fill="url(#beam)"/>
+<circle cx="128" cy="128" r="14" fill="#ff425a"/><circle cx="124" cy="124" r="6" fill="#fff"/>
+<path d="M163 92 201 54" fill="none" stroke="#ff425a" stroke-width="5" stroke-linecap="round"/>
+</svg>

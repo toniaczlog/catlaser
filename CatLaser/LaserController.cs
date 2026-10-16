@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -31,6 +32,13 @@ internal sealed class LaserController : IDisposable
     private double _fpsMeasureStart;
     private int _frames;
     private int _actualFps;
+    private PlaySequence? _playlist;
+    private int _playlistIndex;
+    private double _playlistElapsed;
+    private bool _suspended;
+    private double _lastFullscreenCheck;
+    public bool Suspended => _suspended;
+    public string? PlaylistName => _playlist?.Name;
 
     public LaserOptions Options { get; private set; } = new();
     public bool Enabled { get; private set; }
@@ -60,11 +68,43 @@ internal sealed class LaserController : IDisposable
         {
             var overlay = new LaserOverlay(screen);
             _overlays.Add(overlay);
-            if (Enabled) overlay.Show();
+            if (Enabled && !_suspended) overlay.Show();
         }
     }
 
     public void Toggle() => SetEnabled(!Enabled);
+
+    public void StartPlaylist(PlaySequence playlist)
+    {
+        if(playlist.Steps.Count==0)return;
+        _playlist=new PlaySequence {Name=playlist.Name,
+            Steps=playlist.Steps.Select(s=>new PlayStep{Mode=s.Mode,Seconds=s.Seconds}).ToList()};
+        _playlistIndex=0;_playlistElapsed=0;
+        Options.Mode=_playlist.Steps[0].Mode;
+        BeginSession();
+        if(!Enabled)SetEnabled(true);
+        Changed?.Invoke();
+    }
+
+    public void StopPlaylist()
+    {
+        if(_playlist is null)return;
+        _playlist=null;
+        Options.Mode=PlayMode.Manual;
+        BeginSession();
+        UpdateNativeCursor();
+        Changed?.Invoke();
+    }
+
+    public void SetMonitor(string deviceName)
+    {
+        Options.MonitorDeviceName=deviceName;
+        Options.Sanitize();
+        BeginSession();
+        Changed?.Invoke();
+    }
+
+    public void ResetPlayArea(){BeginSession();Changed?.Invoke();}
 
     public void SetEnabled(bool enabled)
     {
@@ -73,12 +113,13 @@ internal sealed class LaserController : IDisposable
         if (enabled)
         {
             BeginSession();
-            foreach (var overlay in _overlays) overlay.Show();
+            foreach (var overlay in _overlays) { if (!_suspended) overlay.Show(); }
         }
         else
         {
             foreach (var overlay in _overlays) overlay.Hide();
             _trail.Clear(); _waves.Clear();
+            _playlist=null;_suspended=false;
         }
         UpdateNativeCursor();
         Changed?.Invoke();
@@ -87,6 +128,7 @@ internal sealed class LaserController : IDisposable
     public void SetMode(PlayMode mode)
     {
         if (Options.Mode == mode) return;
+        _playlist=null;
         Options.Mode = mode;
         BeginSession();
         UpdateNativeCursor();
@@ -163,7 +205,7 @@ internal sealed class LaserController : IDisposable
         _previousValid = false; _wasFast = false;
         _mouseDown = false;
         var p = Forms.Cursor.Position;
-        _motion.Reset(Options.Mode, new Point(p.X, p.Y));
+        _motion.Reset(Options.Mode, new Point(p.X, p.Y), Options);
         _lastSeconds = _clock.Elapsed.TotalSeconds;
     }
 
@@ -174,7 +216,7 @@ internal sealed class LaserController : IDisposable
             NativeCursor.Restore();
             _cursorApplied = false;
         }
-        if (Enabled && Options.Mode == PlayMode.Manual)
+        if (Enabled && !_suspended && _playlist is null && Options.Mode == PlayMode.Manual)
             _cursorApplied = NativeCursor.Apply(Options.ColorIndex);
     }
 
@@ -186,6 +228,52 @@ internal sealed class LaserController : IDisposable
         double dt = Math.Clamp(seconds - _lastSeconds, 0, .075);
         _lastSeconds = seconds;
 
+        if(seconds-_lastFullscreenCheck>.5)
+        {
+            _lastFullscreenCheck=seconds;
+            bool suspend=Options.PauseOnFullscreen&&FullscreenGuard.IsFullscreen();
+            if(suspend!=_suspended)
+            {
+                _suspended=suspend;
+                if(_suspended)
+                {
+                    foreach(var overlay in _overlays)overlay.Hide();
+                    _trail.Clear();_waves.Clear();
+                }
+                else foreach(var overlay in _overlays)overlay.Show();
+                UpdateNativeCursor();
+                Changed?.Invoke();
+            }
+        }
+        if(_suspended)return;
+
+        if(_playlist is not null)
+        {
+            var step=_playlist.Steps[_playlistIndex];
+            _playlistElapsed+=dt;
+            if(_playlistElapsed>=step.Seconds)
+            {
+                _playlistIndex++;
+                _playlistElapsed=0;
+                if(_playlistIndex>=_playlist.Steps.Count)
+                {
+                    _playlist=null;
+                    SetEnabled(false);
+                    return;
+                }
+                Options.Mode=_playlist.Steps[_playlistIndex].Mode;
+                var p=Forms.Cursor.Position;
+                _motion.Reset(Options.Mode,new Point(p.X,p.Y),Options);
+                _trail.Clear();
+                Changed?.Invoke();
+            }
+            if(Options.Mode==PlayMode.Manual)
+            {
+                _trail.Clear();_waves.Clear();Draw(null);
+                return; // Manual entries in playlists are intentionally dark rest breaks.
+            }
+        }
+
         _frames++;
         if (seconds - _fpsMeasureStart >= 1)
         {
@@ -194,7 +282,7 @@ internal sealed class LaserController : IDisposable
             Changed?.Invoke();
         }
 
-        if (Options.Mode != PlayMode.Manual)
+        if (Options.Mode != PlayMode.Manual && _playlist is null)
         {
             if (now < _breakUntil)
             {
@@ -226,7 +314,7 @@ internal sealed class LaserController : IDisposable
             var mouse = Forms.Cursor.Position;
             point = new Point(mouse.X, mouse.Y);
         }
-        else point = _motion.Step(Options.Mode, dt, Options.Speed, now);
+        else point = _motion.Step(Options, dt, now);
 
         if (Options.Jitter > 0)
         {

@@ -39,8 +39,14 @@ internal sealed class CatLaserApp : System.Windows.Application
         // Also repairs the cursor scheme if a previous CatLaser run ended unexpectedly.
         NativeCursor.Restore();
         _controller = new LaserController();
-
-        _settingsWindow = new SettingsWindow(_controller, ExitApp);
+        _hotkey = new HotkeyWindow(
+            () => _controller.Toggle(),
+            () => _controller.CycleStyle(),
+            () => _controller.CycleColor(),
+            () => _controller.AdjustSpeed(10),
+            () => _controller.AdjustSpeed(-10),
+            () => _controller.CycleMode());
+        _settingsWindow = new SettingsWindow(_controller, ExitApp, _hotkey);
         _settingsWindow.Closing += (_, eventArgs) =>
         {
             if (_exiting) return;
@@ -55,9 +61,66 @@ internal sealed class CatLaserApp : System.Windows.Application
         var restore = new Forms.ToolStripMenuItem(UiText.T("tray_restore"), null, (_, _) => _controller.SetEnabled(false));
         var quit = new Forms.ToolStripMenuItem(UiText.T("tray_exit"), null, (_, _) => ExitApp());
 
+        var modeMenu = new Forms.ToolStripMenuItem();
+        var colorMenu = new Forms.ToolStripMenuItem();
+        var presetMenu = new Forms.ToolStripMenuItem();
+        var playlistMenu = new Forms.ToolStripMenuItem();
+        var fasterMenu = new Forms.ToolStripMenuItem();
+        var slowerMenu = new Forms.ToolStripMenuItem();
+        modeMenu.DropDownOpening+=(_,_)=>{
+            modeMenu.DropDownItems.Clear();
+            foreach(var mode in Enum.GetValues<PlayMode>())
+            {
+                var m=mode;
+                modeMenu.DropDownItems.Add(new Forms.ToolStripMenuItem(
+                    UiText.T("mode_"+mode.ToString().ToLowerInvariant()),
+                    null,(_,_)=>_controller.SetMode(m)){Checked=_controller.Options.Mode==m});
+            }
+        };
+        colorMenu.DropDownOpening+=(_,_)=>{
+            colorMenu.DropDownItems.Clear();
+            string[] keys={"color_red","color_green","color_blue","color_violet","color_amber","color_cyan"};
+            for(int i=0;i<keys.Length;i++)
+            {
+                int index=i;
+                colorMenu.DropDownItems.Add(new Forms.ToolStripMenuItem(UiText.T(keys[i]),
+                    null,(_,_)=>_controller.SetColor(index)){Checked=_controller.Options.ColorIndex==index});
+            }
+        };
+        presetMenu.DropDownOpening+=(_,_)=>{
+            presetMenu.DropDownItems.Clear();
+            var presets=new PresetStore().Presets;
+            foreach(var p in presets)
+                presetMenu.DropDownItems.Add(new Forms.ToolStripMenuItem(p.Name,null,
+                    (_,_)=>_controller.ApplyPreset(p.Options)));
+            if(presets.Count==0)presetMenu.DropDownItems.Add(new Forms.ToolStripMenuItem("—"){Enabled=false});
+        };
+        playlistMenu.DropDownOpening+=(_,_)=>{
+            playlistMenu.DropDownItems.Clear();
+            foreach(var p in new PlaylistStore().Playlists)
+                playlistMenu.DropDownItems.Add(new Forms.ToolStripMenuItem(p.Name,null,
+                    (_,_)=>_controller.StartPlaylist(p)));
+            playlistMenu.DropDownItems.Add(new Forms.ToolStripSeparator());
+            playlistMenu.DropDownItems.Add(new Forms.ToolStripMenuItem(UiText.T("stop_playlist"),null,
+                (_,_)=>_controller.StopPlaylist()));
+        };
+        fasterMenu.Click+=(_,_)=>_controller.AdjustSpeed(10);
+        slowerMenu.Click+=(_,_)=>_controller.AdjustSpeed(-10);
+        void TranslateQuick()
+        {
+            modeMenu.Text=UiText.T("tray_modes");
+            colorMenu.Text=UiText.T("tray_colors");
+            presetMenu.Text=UiText.T("tray_presets");
+            playlistMenu.Text=UiText.T("tray_playlists");
+            fasterMenu.Text=UiText.T("tray_faster");
+            slowerMenu.Text=UiText.T("tray_slower");
+        }
+        TranslateQuick();
         _trayMenu.Items.AddRange(new Forms.ToolStripItem[]
         {
-            show, toggle, catMode, new Forms.ToolStripSeparator(), restore, new Forms.ToolStripSeparator(), quit
+            show,toggle,catMode,new Forms.ToolStripSeparator(),modeMenu,colorMenu,
+            presetMenu,playlistMenu,fasterMenu,slowerMenu,new Forms.ToolStripSeparator(),
+            restore,new Forms.ToolStripSeparator(),quit
         });
         _controller.Changed += () =>
         {
@@ -83,16 +146,11 @@ internal sealed class CatLaserApp : System.Windows.Application
             catMode.Text = UiText.T("tray_cat");
             restore.Text = UiText.T("tray_restore");
             quit.Text = UiText.T("tray_exit");
+            TranslateQuick();
             if (_tray is not null) _tray.Text = UiText.T("tray_tooltip");
         };
 
-        _hotkey = new HotkeyWindow(
-            () => _controller.Toggle(),
-            () => _controller.CycleStyle(),
-            () => _controller.CycleColor(),
-            () => _controller.AdjustSpeed(10),
-            () => _controller.AdjustSpeed(-10),
-            () => _controller.CycleMode());
+
         _controller.Start();
         _settingsWindow.Show();
     }

@@ -138,6 +138,8 @@ internal sealed class LaserOverlay : Window
                     if (options.Style == LaserStyle.Electric) DrawElectric(dc, center, frame, color);
                     if (options.Style == LaserStyle.Photoreal) DrawSpeckle(dc, center, frame, color);
                     if (options.Style == LaserStyle.Plasma) DrawPlasma(dc, center, frame, color);
+                    if (options.Style is LaserStyle.HaloPulse or LaserStyle.TwinSpot or LaserStyle.LightTunnel or LaserStyle.SoftStar)
+                        DrawIllusion(dc,center,frame,color);
                     if (options.Style == LaserStyle.Cyber)
                     {
                         var pen = new Pen(new SolidColorBrush(Color.FromArgb(110, color.R, color.G, color.B)), 1.6);
@@ -311,6 +313,61 @@ internal sealed class LaserOverlay : Window
                 var pen = new Pen(new SolidColorBrush(
                     Color.FromArgb((byte)(120 - i * 30), color.R, color.G, color.B)), 1.3 + i * .5);
                 dc.DrawEllipse(null, pen, center, r, r * (.8 + .1 * i));
+            }
+        }
+
+        private void DrawIllusion(DrawingContext dc, Point center, LaserFrame frame, Color color)
+        {
+            // Avoid sharp flashing: all oscillations are slow and alpha limited.
+            var style=frame.Options.Style;
+            double t=frame.Seconds;
+            var soft=new SolidColorBrush(Color.FromArgb(90,color.R,color.G,color.B));
+            var pen=new Pen(soft,1.5);
+            if(style==LaserStyle.HaloPulse)
+            {
+                double r=22+7*Math.Sin(t*2.2);
+                dc.DrawEllipse(null,pen,center,r,r);
+                dc.DrawEllipse(null,new Pen(soft,.9),center,r+10,r+10);
+            }
+            else if(style==LaserStyle.TwinSpot)
+            {
+                double a=t*1.3;
+                for(int i=0;i<2;i++)
+                {
+                    double phase=a+i*Math.PI;
+                    var p=new Point(center.X+Math.Cos(phase)*19,center.Y+Math.Sin(phase)*12);
+                    dc.DrawEllipse(GetGlow(frame.Options.ColorIndex,color),null,p,13,13);
+                    dc.DrawEllipse(Brushes.White,null,p,2.2,2.2);
+                }
+            }
+            else if(style==LaserStyle.LightTunnel)
+            {
+                int count=frame.Options.Performance==PerformanceProfile.Eco?3:5;
+                for(int i=0;i<count;i++)
+                {
+                    double r=13+i*9+2*Math.Sin(t*1.4-i*.4);
+                    byte alpha=(byte)Math.Clamp(85-i*12,18,100);
+                    dc.DrawEllipse(null,new Pen(new SolidColorBrush(
+                        Color.FromArgb(alpha,color.R,color.G,color.B)),1.3),center,r,r*.83);
+                }
+            }
+            else if(style==LaserStyle.SoftStar)
+            {
+                double r=16+3*Math.Sin(t*2.1);
+                var geo=new StreamGeometry();
+                using(var g=geo.Open())
+                {
+                    for(int i=0;i<8;i++)
+                    {
+                        double a=-Math.PI/2+i*Math.PI/4;
+                        double distance=i%2==0?r:r*.35;
+                        var p=new Point(center.X+Math.Cos(a)*distance,center.Y+Math.Sin(a)*distance);
+                        if(i==0)g.BeginFigure(p,true,true);
+                        else g.LineTo(p,true,false);
+                    }
+                }
+                geo.Freeze();
+                dc.DrawGeometry(new SolidColorBrush(Color.FromArgb(55,color.R,color.G,color.B)),pen,geo);
             }
         }
 

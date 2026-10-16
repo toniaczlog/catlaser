@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 240" role="img" aria-label="CatLaser wordmark">
+<defs><radialGradient id="b"><stop stop-color="#fff" offset="0"/><stop stop-color="#f93e56" offset=".20"/><stop stop-color="#f93e56" stop-opacity="0" offset="1"/></radialGradient></defs>
+<circle cx="105" cy="120" r="92" fill="none" stroke="#ff4058" stroke-width="7"/>
+<circle cx="105" cy="120" r="62" fill="none" stroke="#ff4058" stroke-opacity=".45" stroke-width="4"/>
+<circle cx="105" cy="120" r="55" fill="url(#b)"/>
+<circle cx="105" cy="120" r="14" fill="#ff4058"/><circle cx="100" cy="115" r="5" fill="white"/>
+<path d="M149 77 189 34" stroke="#ff4058" stroke-width="6" stroke-linecap="round"/>
+<text x="233" y="157" fill="#17212E" font-size="115" font-weight="900" font-family="Arial,Helvetica,sans-serif" letter-spacing="-7">CAT</text>
+<text x="474" y="157" fill="#FF4058" font-size="115" font-weight="900" font-family="Arial,Helvetica,sans-serif" letter-spacing="-7">LASER</text>
+<circle cx="850" cy="145" r="11" fill="#FF4058"/>
+</svg>

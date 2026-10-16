@@ -15,3 +15,9 @@
 - 2026-10-16: Publish CatLaser marketing page via GitHub Pages using `main /docs` static source, no Vercel/Netlify or runtime dependencies.
 - 2026-10-16: PL/EN language selector for website uses browser language on first visit, with a localStorage override; this is separate from Windows app language detection.
 - 2026-10-16: Suppress Windows CI builds for website-only changes to conserve build minutes and avoid accidental duplicate application releases.
+
+- 2026-10-16: CatLaser 0.3 adds bounded monitor play region and reusable Playlists; no moving OS cursor, no unbounded runtime.
+- 2026-10-16: Fullscreen-pausing is limited to foreground borderless windows to avoid pausing during ordinary maximized browser windows; must test in live Windows.
+- 2026-10-16: Custom shortcut registration rolls back when any combination conflicts; persist only valid set.
+- 2026-10-16: Landing expands without frameworks or remote tracking. Separate `/pl/`, `/en/` static, indexable pages; press graphics are vector SVG.
+- 2026-10-16: Do not fabricate app screenshots. Landing explicitly labels this user-verified capture as pending.
