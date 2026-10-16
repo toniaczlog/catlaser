@@ -59,7 +59,7 @@ Windows:
 Website:
 - `docs/index.html`, `docs/main.js`, `docs/styles.css` include eight-effect tuner, four movement preview canvases, sticky mobile download, privacy/download/release/press sections. `docs/pl/` and `docs/en/` are static SEO routes, `docs/sitemap.xml` + robots.
 - `docs/press/` holds mark, wordmark, 9:16 and 16:9 SVG assets. No external CDN.
-- L1 screenshot section is **pending** real app Windows captures; no invented screenshots. This is the one uncompleted acceptance criterion.
+- L1 screenshot uses **actual** WPF settings window rendered by a Windows GitHub Actions run: `docs/screenshots/settings-0.3.png` (63,523 bytes). Do not replace it with generated mockups.
 - Tests: `tests/ConfigSmoke`, `tests/LocalizationSmoke` in Windows workflow; `scripts/check-site.mjs` for website.
 
 ## v0.3.1 follow-up: adaptive power (A13)

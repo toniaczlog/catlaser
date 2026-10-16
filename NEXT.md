@@ -17,7 +17,7 @@
 ## v0.3 test checklist
 
 - On Windows: check all four visual illusions, spiral/eight/orbit, selected monitor and area, saved playlist reload and startup, rest, tray submenu, custom hotkey conflicts and rollback, fullscreen pause and cursor restore.
-- On Windows: take actual screenshots of CatLaser UI and effects, put under `docs/screenshots/`, replace pending screenshot placeholder.
+- On Windows: visually review the automatic WPF screenshot `docs/screenshots/settings-0.3.png` and optionally add genuine effects captures from manual testing.
 - On landing: test PL/EN URLs, 8 interactive effects, glow/trail/color inputs, motion previews, sticky download and press SVG links. Check both 390px mobile and desktop.
 - Watch for main/release race on combined deploy. Ensure tag `v0.3.0` and ZIP are present before advertising download.
 

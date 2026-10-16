@@ -3,10 +3,11 @@ import { readFileSync, existsSync } from 'node:fs';
 
 const read = file => readFileSync(new URL('../docs/' + file, import.meta.url), 'utf8');
 const html = read('index.html');
-const css = read('styles.css');
-const js = read('main.js');
 const pl = read('pl/index.html');
 const en = read('en/index.html');
+const css = read('styles.css');
+const js = read('main.js');
+
 assert.match(html, /<html lang="pl">/, 'Polish fallback');
 assert.match(html, /data-lang="en"/, 'English selector');
 assert.match(pl, /<html lang="pl">/, 'Polish SEO route');
@@ -14,6 +15,10 @@ assert.match(en, /<html lang="en">/, 'English SEO route');
 assert.match(pl, /rel="canonical"/, 'Polish canonical');
 assert.match(en, /rel="canonical"/, 'English canonical');
 assert.match(html, /name="viewport"/, 'Responsive viewport');
+for (const localized of [html, pl, en]) {
+  assert.match(localized, /settings-0\\.3\\.png/, 'Actual WPF settings screenshot on localized landing');
+  assert.doesNotMatch(localized, /coming soon|w przygotowaniu/i, 'No screenshot placeholder');
+}
 assert.match(html, /CatLaser-0\.3-win-x64\.zip/, 'Download URL');
 assert.match(css, /prefers-reduced-motion/, 'Reduced motion support');
 assert.match(html, /id="watcher"/, 'Eye tracker is present');

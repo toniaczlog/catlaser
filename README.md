@@ -114,7 +114,7 @@ The language selector defaults to the visitor's preferred browser language (PL o
 
 Landing hosted by GitHub Pages at [CatLaser](https://toniaczlog.github.io/catlaser/), with indexable [/pl/](https://toniaczlog.github.io/catlaser/pl/) and [/en/](https://toniaczlog.github.io/catlaser/en/) routes, an eight-effect browser demo, color/glow/trail controls, four motion previews, mobile sticky download, privacy, release notes and an [SVG press kit](docs/press/).
 
-**App screenshots:** the website has an explicitly marked pending section; real screenshots were not supplied. Add verified Windows 0.3 captures to `docs/screenshots/` and replace that placeholder. Do not pass off generated mockups as real captures.
+**App screenshots:** genuine Windows WPF settings capture generated from the EXE in GitHub Actions and stored at `docs/screenshots/settings-0.3.png`. The landing displays this verified screenshot instead of a mockup.
 
 To avoid unnecessary builds: docs changes trigger the small site-check workflow but not the EXE build. A joint 0.3 code update triggers one Windows Release CI and one Pages deploy.
 

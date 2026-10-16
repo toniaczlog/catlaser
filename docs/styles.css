@@ -36,3 +36,14 @@
 @media(max-width:760px){.download-panel{grid-template-columns:1fr;gap:25px}.privacy-grid{grid-template-columns:1fr}.evidence-card{flex-wrap:wrap}.mode-section{padding-top:60px}}
 @media(max-width:500px){body{padding-bottom:73px}.mobile-download{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:99;align-items:center;justify-content:space-between;gap:10px;background:#fcf9f1;border-top:1px solid #dfd3c9;padding:9px 16px;box-shadow:0 -6px 20px #1a24301c}.mobile-download b{font-size:18px;letter-spacing:-.05em;white-space:nowrap}.mobile-download b span{color:var(--red)}.mobile-download .btn{min-height:43px;padding:10px 12px;box-shadow:none;white-space:nowrap}.demo-controls{flex-wrap:wrap}.demo-controls>div{justify-content:flex-start;max-width:100%}.demo-controls button{font-size:9px}.demo-tuner{gap:7px}.demo-tuner label{font-size:8px}.mode-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.mode-grid article{padding:8px}.mode-grid h3{font-size:14px}.mode-grid p{font-size:11px}.download-panel{padding:28px 22px}.download-meta{gap:6px}.download-meta>div{padding:13px 10px;min-height:90px}.download-meta strong{font-size:12px}.evidence-card{gap:10px}.evidence-card>b{min-width:60px;min-height:60px;font-size:30px}.press-files{gap:8px}.press-files a{min-height:145px;padding:12px}.press-files a>span{font-size:17px}.version-list>div{grid-template-columns:80px 1fr;gap:10px}.version-list b{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.js-motion .fade-in{opacity:1!important;transform:none!important;transition:none!important}}
+
+/* Actual Windows WPF settings screenshot — no fabricated product mockup. */
+.screenshot-card{align-items:center!important;gap:25px!important}
+.screenshot-image{flex:0 1 60%;min-width:0;background:#141b27;border:1px solid #303d4e;border-radius:12px;padding:12px;box-shadow:0 10px 30px #18202c18}
+.screenshot-image img{display:block;width:100%;height:auto;border-radius:5px;background:#111621}
+.screenshot-detail{flex:1;min-width:205px}
+.capture-proof{display:block;color:#f93e56;font-size:10px;font-weight:900;letter-spacing:.13em;margin-bottom:12px}
+.screenshot-detail h3{margin:0 0 12px;font-size:clamp(20px,2.2vw,27px);letter-spacing:-.04em}
+.screenshot-detail p{line-height:1.65}
+.screenshot-detail a{font-weight:800;font-size:12px;border-bottom:2px solid #f93e56;padding-bottom:5px}
+@media(max-width:800px){.screenshot-card{flex-direction:column!important;align-items:stretch!important}.screenshot-image{flex:auto;width:100%}.screenshot-detail{min-width:0}}
