@@ -401,6 +401,8 @@ internal sealed class SettingsWindow : Window
                 Update(o => o.CustomFps = i switch { 1 => 30, 2 => 60, 3 => 120, 4 => 144, _ => null })));
         body.Children.Add(Toggle("pause_fullscreen","fullscreen",_controller.Options.PauseOnFullscreen,
             v=>Update(o=>o.PauseOnFullscreen=v)));
+        body.Children.Add(Toggle("adaptive_power","adaptive",_controller.Options.AdaptivePower,
+            v=>Update(o=>o.AdaptivePower=v)));
         body.Children.Add(Info(UiText.T("perf_hint")));
     }
 
@@ -701,7 +703,8 @@ internal sealed class SettingsWindow : Window
                 : _controller.IsResting
                     ? UiText.T("status_rest")
                     : UiText.F("status_session", _controller.SessionRemaining);
-        _stats.Text = UiText.F("fps_measure", _controller.ActualFps, o.TargetFps);
+        _stats.Text = UiText.F("fps_measure", _controller.ActualFps, o.TargetFps) +
+            $" · {_controller.LastSubmissionMilliseconds:0.0} ms submit";
 
         _syncing = true;
         try
@@ -725,6 +728,7 @@ internal sealed class SettingsWindow : Window
             ToggleValue("trail", o.TrailEnabled);
             ToggleValue("wave", o.ShockwaveEnabled);
             ToggleValue("fullscreen",o.PauseOnFullscreen);
+            ToggleValue("adaptive",o.AdaptivePower);
             if (_previewGlow is not null)
                 _previewGlow.Fill = Halo(o.PrimaryColor);
             if (_previewCore is not null)

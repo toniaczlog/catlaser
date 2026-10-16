@@ -61,3 +61,9 @@ Website:
 - `docs/press/` holds mark, wordmark, 9:16 and 16:9 SVG assets. No external CDN.
 - L1 screenshot section is **pending** real app Windows captures; no invented screenshots. This is the one uncompleted acceptance criterion.
 - Tests: `tests/ConfigSmoke`, `tests/LocalizationSmoke` in Windows workflow; `scripts/check-site.mjs` for website.
+
+## v0.3.1 follow-up: adaptive power (A13)
+- `LaserController` detects idle manual pointer in nonanimated Real/Neon/Comet styles; after fading trail settles, skips overlay invalidation and reduces dispatcher ticks to 12 FPS.
+- Animated styles and autonomous games remain at selected FPS; changes in pointer position restore selected FPS.
+- `LastSubmissionMilliseconds` measures the time to submit frame drawing requests to WPF, not actual GPU duration.
+- WPF control checkbox is localized (PL/EN), and remains part of saved presets.

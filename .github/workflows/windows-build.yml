@@ -51,6 +51,30 @@ jobs:
           Compress-Archive -Path dist/* -DestinationPath CatLaser-0.3-win-x64.zip -Force
           if (!(Test-Path CatLaser-0.3-win-x64.zip)) { throw 'Missing archive' }
 
+
+      - name: Capture authentic WPF settings screen for the landing
+        shell: pwsh
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $capturePath = Join-Path $PWD "settings-0.3.png"
+          $job = Start-Process -FilePath (Join-Path $PWD "dist/CatLaser.exe") -ArgumentList @("--capture-settings", $capturePath) -PassThru
+          if (-not $job.WaitForExit(25000)) {
+            $job.Kill()
+            Write-Warning "Screen capture timed out; leave screenshot placeholder in landing."
+            exit 0
+          }
+          if ($job.ExitCode -ne 0 -or !(Test-Path $capturePath)) {
+            Write-Warning "Actual GUI screenshot could not be captured on hosted Windows runner."
+            exit 0
+          }
+          $bytes = [IO.File]::ReadAllBytes($capturePath)
+          if ($bytes.Length -lt 20000) { Write-Warning "Too small screenshot"; exit 0 }
+          $encoded = [Convert]::ToBase64String($bytes)
+          $payload = @{ message = "docs: add verified WPF CatLaser 0.3 settings screenshot"; content = $encoded; branch = "main" } | ConvertTo-Json -Compress
+          $payload | gh api "repos/${{ github.repository }}/contents/docs/screenshots/settings-0.3.png" --method PUT --input -
+
       - name: Upload CI artifact
         uses: actions/upload-artifact@v4
         with:

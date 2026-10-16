@@ -35,6 +35,7 @@ public sealed class LaserOptions
     public double AreaHeight { get; set; } = 90;
     public bool PauseOnFullscreen { get; set; } = true;
     public double OrbitRadius { get; set; } = 30;
+    public bool AdaptivePower { get; set; } = true;
 
     public int TargetFps => Math.Clamp(CustomFps ?? (Performance switch
     {

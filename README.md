@@ -117,3 +117,7 @@ Landing hosted by GitHub Pages at [CatLaser](https://toniaczlog.github.io/catlas
 **App screenshots:** the website has an explicitly marked pending section; real screenshots were not supplied. Add verified Windows 0.3 captures to `docs/screenshots/` and replace that placeholder. Do not pass off generated mockups as real captures.
 
 To avoid unnecessary builds: docs changes trigger the small site-check workflow but not the EXE build. A joint 0.3 code update triggers one Windows Release CI and one Pages deploy.
+
+### Adaptive performance (0.3 maintenance)
+
+In manual Real/Neon/Comet mode, CatLaser reduces its dispatcher work to 12 FPS after the cursor and trail are still, then returns to the selected frame rate when motion resumes. The **Adaptive power** toggle in Performance Center enables/disables this behavior. The displayed millisecond value is WPF drawing submission cost, not a GPU benchmark.

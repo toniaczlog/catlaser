@@ -16,6 +16,14 @@ internal static class Program
             return;
         }
 
+        int capture = Array.FindIndex(args, x => x.Equals("--capture-settings", StringComparison.OrdinalIgnoreCase));
+        if (capture >= 0)
+        {
+            if (capture + 1 < args.Length)
+                CaptureSettings.Run(args[capture + 1]);
+            return;
+        }
+
         var app = new CatLaserApp { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         app.Run();
     }

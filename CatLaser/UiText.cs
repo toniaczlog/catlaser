@@ -14,6 +14,7 @@ internal static class UiText
 
     private static readonly Dictionary<string, (string En, string Pl)> Strings = new(StringComparer.Ordinal)
     {
+        ["adaptive_power"] = ("Save energy when manual laser is still", "Oszczędzaj energię przy nieruchomym laserze"),
         ["window_title"] = ("CatLaser 0.3 · Laser Playground", "CatLaser 0.3 · Laser dla kota"),
         ["tagline"] = ("Make your cursor a little more magical.", "Zmień kursor w efektowny laser."),
         ["language"] = ("Language", "Język"),

@@ -20,3 +20,5 @@
 - On Windows: take actual screenshots of CatLaser UI and effects, put under `docs/screenshots/`, replace pending screenshot placeholder.
 - On landing: test PL/EN URLs, 8 interactive effects, glow/trail/color inputs, motion previews, sticky download and press SVG links. Check both 390px mobile and desktop.
 - Watch for main/release race on combined deploy. Ensure tag `v0.3.0` and ZIP are present before advertising download.
+
+- Verify on Windows that adaptive 12 FPS starts only after the laser is idle, and moving the pointer wakes it immediately.

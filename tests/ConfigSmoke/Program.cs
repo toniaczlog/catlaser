@@ -19,6 +19,7 @@ o.Sanitize();
 Assert(o.AreaWidth<=25,"clamp width inside screen");
 Assert(o.AreaHeight<=100,"clamp height");
 Assert(o.Glow==65,"sanitize non-finite");
+Assert(new LaserOptions().AdaptivePower,"adaptive power defaults on");
 Assert(o.MonitorDeviceName=="","sanitize monitor name");
 Assert(Enum.IsDefined(PlayMode.Spiral) && Enum.IsDefined(PlayMode.Orbit) &&
        Enum.IsDefined(PlayMode.FigureEight),"new motions");

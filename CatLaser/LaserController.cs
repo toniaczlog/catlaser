@@ -37,6 +37,9 @@ internal sealed class LaserController : IDisposable
     private double _playlistElapsed;
     private bool _suspended;
     private double _lastFullscreenCheck;
+    private double _stillSeconds;
+    private int _configuredFps;
+    public double LastSubmissionMilliseconds { get; private set; }
     public bool Suspended => _suspended;
     public string? PlaylistName => _playlist?.Name;
 
@@ -193,7 +196,16 @@ internal sealed class LaserController : IDisposable
 
     private void ConfigureFrameRate()
     {
-        _timer.Interval = TimeSpan.FromMilliseconds(1000.0 / Options.TargetFps);
+        _configuredFps = Options.TargetFps;
+        _timer.Interval = TimeSpan.FromMilliseconds(1000.0 / _configuredFps);
+    }
+
+    private void UpdateDynamicRate(bool lowPower)
+    {
+        int fps = lowPower && Options.AdaptivePower ? 12 : Options.TargetFps;
+        if (_configuredFps == fps) return;
+        _configuredFps = fps;
+        _timer.Interval = TimeSpan.FromMilliseconds(1000.0 / fps);
     }
 
     private void BeginSession()
@@ -203,6 +215,8 @@ internal sealed class LaserController : IDisposable
         _breakUntil = DateTime.MinValue;
         _trail.Clear(); _waves.Clear();
         _previousValid = false; _wasFast = false;
+        _stillSeconds = 0;
+        UpdateDynamicRate(false);
         _mouseDown = false;
         var p = Forms.Cursor.Position;
         _motion.Reset(Options.Mode, new Point(p.X, p.Y), Options);
@@ -245,7 +259,11 @@ internal sealed class LaserController : IDisposable
                 Changed?.Invoke();
             }
         }
-        if(_suspended)return;
+        if(_suspended)
+        {
+            UpdateDynamicRate(true);
+            return;
+        }
 
         if(_playlist is not null)
         {
@@ -337,6 +355,7 @@ internal sealed class LaserController : IDisposable
             }
         }
 
+        double movement = _previousValid ? (point - _previous).Length : double.MaxValue;
         if (_previousValid && dt > 0)
         {
             double speed = (point - _previous).Length / dt;
@@ -358,6 +377,17 @@ internal sealed class LaserController : IDisposable
         _waves.RemoveAll(w => (now - w.Timestamp).TotalSeconds > .8);
         if (_waves.Count > 6) _waves.RemoveRange(0, _waves.Count - 6);
 
+        // Static manual styles need no WPF invalidation after their last fading trail.
+        // Animated styles always keep their selected FPS to preserve visual effects.
+        bool staticStyle = Options.Style is LaserStyle.Real or LaserStyle.Neon or LaserStyle.Comet;
+        bool still = _playlist is null && Options.Mode == PlayMode.Manual &&
+            movement < 1 && Options.Jitter < .001;
+        _stillSeconds = still ? _stillSeconds + dt : 0;
+        bool lowPower = Options.AdaptivePower && staticStyle && still && _stillSeconds > maxAge + .3 &&
+            _waves.Count == 0 && _trail.Count <= 1;
+        UpdateDynamicRate(lowPower);
+        if (lowPower) return;
+
         Draw(new LaserFrame
         {
             Position = point, Trail = _trail, Shockwaves = _waves,
@@ -368,7 +398,9 @@ internal sealed class LaserController : IDisposable
 
     private void Draw(LaserFrame? frame)
     {
+        long started = Stopwatch.GetTimestamp();
         foreach (var overlay in _overlays) overlay.Draw(frame);
+        LastSubmissionMilliseconds = (Stopwatch.GetTimestamp() - started) * 1000.0 / Stopwatch.Frequency;
     }
 
     public void Dispose()
